@@ -17,12 +17,13 @@ window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 import { YellowBox } from 'react-native'
 
-// YellowBox.ignoreWarnings([
-//   'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
-// ]);
+YellowBox.ignoreWarnings([
+  'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
+]);
 import {createStackNavigator, createAppContainer} from "react-navigation";
 
-const socket = io("http://localhost:3000");
+
+const socket = io("http://harrys-macbook-pro.local:3000");
 
 class Landing extends Component {
 
