@@ -10,7 +10,7 @@ import {
     Button,
     Alert,
     TouchableHighlight,
-    SpotifyBridge
+    NativeModules
     } from 'react-native';
 
 window.navigator.userAgent = 'react-native';
@@ -44,7 +44,6 @@ class Landing extends Component {
                         onChangeText = {(text) => this.setState({text})}
                         value = {this.state.text}
                         autoCorrect = {false}
-                        autoFocus = {true}
                     />
                     <Button
                         style = {styles.joinLobbyButton}
@@ -88,7 +87,6 @@ class LobbySettings extends Component {
                     onChangeText = {(text) => this.setState({text})}
                     placeholder = "Lobby Name"
                     placeholderTextColor = "#fff"
-                    autoFocus = {true}
                 />
                 <TouchableHighlight
                     style = {styles.uploadPlaylistTouchable}

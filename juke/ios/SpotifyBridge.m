@@ -8,6 +8,7 @@
 #import "SpotifyBridge.h"
 #import "SpotifyiOS.framework/Headers/SpotifyiOS.h"
 @implementation SpotifyBridge
+
 RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(
@@ -25,10 +26,10 @@ RCT_EXPORT_METHOD(
     NSLog(@"renewed: %@", session);
 });
 
-//NSString *spotifyClientID = @"[your spotify client id here]";
-//NSURL *spotifyRedirectURL = [NSURL URLWithString:@"spotify-ios-quick-start://spotify-login-callback"];
-//
-//self.configuration  = [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:spotifyRedirectURL];
++ SString *spotifyClientID = @"ff19e2ea3546447e916e43dcda51a298";
++ NSURL *spotifyRedirectURL = [NSURL URLWithString:@"http://harrys-macbook-pro.local:3000/spotify-login-callback"];
+
++ self.configuration  = [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:spotifyRedirectURL];
 
 @end
 

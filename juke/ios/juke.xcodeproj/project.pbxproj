@@ -21,8 +21,7 @@
 		B4A3F72364263000F756064B /* libPods-juke.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C056FE58B4D2A9160BBB29F6 /* libPods-juke.a */; };
 		B6D4D3751FF7B133AF3C77F9 /* libPods-juke-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2141F70E7879C5F1667B89C1 /* libPods-juke-tvOS.a */; };
 		BD1FD70322FB0C4500A11AE1 /* libRNGestureHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BD1FD70222FB0C4500A11AE1 /* libRNGestureHandler.a */; };
-		BDF2CA5322F9B02D00A18C5B /* SpotifyBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BDF2CA5222F9B02D00A18C5B /* SpotifyBridge.m */; };
-		BDF2CA5422F9B02D00A18C5B /* SpotifyBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BDF2CA5222F9B02D00A18C5B /* SpotifyBridge.m */; };
+		BD1FD70A22FDCA4E00A11AE1 /* SpotifySDKBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1FD70922FDCA4E00A11AE1 /* SpotifySDKBridge.m */; };
 		BDF2CA5B22F9BB0600A18C5B /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDF2CA5A22F9BB0600A18C5B /* SpotifyiOS.framework */; };
 		BDF2CA5C22F9F49300A18C5B /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDF2CA5A22F9BB0600A18C5B /* SpotifyiOS.framework */; };
 		BDF2CA6122F9FF3500A18C5B /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDF2CA5F22F9FF0000A18C5B /* SpotifyiOS.framework */; };
@@ -70,8 +69,8 @@
 		B8FC6DC15707BFF610F81F7F /* libPods-juke-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-juke-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD1FD70022FB0C2500A11AE1 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD1FD70222FB0C4500A11AE1 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		BDF2CA5122F9AFB500A18C5B /* SpotifyBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpotifyBridge.h; sourceTree = "<group>"; };
-		BDF2CA5222F9B02D00A18C5B /* SpotifyBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SpotifyBridge.m; sourceTree = "<group>"; };
+		BD1FD70922FDCA4E00A11AE1 /* SpotifySDKBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SpotifySDKBridge.m; sourceTree = "<group>"; };
+		BD1FD70B22FDCA7100A11AE1 /* SpotifySDKBridgeHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpotifySDKBridgeHeader.h; sourceTree = "<group>"; };
 		BDF2CA5A22F9BB0600A18C5B /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpotifyiOS.framework; path = "../../../Downloads/ios-sdk-1.0.2/SpotifyiOS.framework"; sourceTree = SOURCE_ROOT; };
 		BDF2CA5E22F9FEC600A18C5B /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpotifyiOS.framework; path = "../../../Downloads/ios-sdk-1.0.2/SpotifyiOS.framework"; sourceTree = "<group>"; };
 		BDF2CA5F22F9FF0000A18C5B /* SpotifyiOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SpotifyiOS.framework; sourceTree = "<group>"; };
@@ -154,6 +153,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB11A68108700A75B9A /* LaunchScreen.xib */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				BD1FD70922FDCA4E00A11AE1 /* SpotifySDKBridge.m */,
+				BD1FD70B22FDCA7100A11AE1 /* SpotifySDKBridgeHeader.h */,
 			);
 			name = juke;
 			sourceTree = "<group>";
@@ -200,8 +201,6 @@
 			isa = PBXGroup;
 			children = (
 				BDF2CA6022F9FF2900A18C5B /* SpotifyiOS.framework */,
-				BDF2CA5222F9B02D00A18C5B /* SpotifyBridge.m */,
-				BDF2CA5122F9AFB500A18C5B /* SpotifyBridge.h */,
 				13B07FAE1A68108700A75B9A /* juke */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* jukeTests */,
@@ -322,6 +321,7 @@
 					};
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = 728T4C332M;
+						LastSwiftMigration = 1030;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -553,7 +553,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				00E356F31AD99517003FC87E /* jukeTests.m in Sources */,
-				BDF2CA5422F9B02D00A18C5B /* SpotifyBridge.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -561,9 +560,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BDF2CA5322F9B02D00A18C5B /* SpotifyBridge.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				BD1FD70A22FDCA4E00A11AE1 /* SpotifySDKBridge.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -670,6 +669,7 @@
 			baseConfigurationReference = 65501EB03065D2D8711BA1B0 /* Pods-juke.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 728T4C332M;
@@ -686,6 +686,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.harryverhoef.juke;
 				PRODUCT_NAME = juke;
+				SWIFT_OBJC_BRIDGING_HEADER = "juke-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -695,6 +698,7 @@
 			baseConfigurationReference = 71F45E4E22144CF575E53303 /* Pods-juke.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 728T4C332M;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -710,6 +714,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.harryverhoef.juke;
 				PRODUCT_NAME = juke;
+				SWIFT_OBJC_BRIDGING_HEADER = "juke-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
