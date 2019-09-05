@@ -9,42 +9,79 @@
 #import <Foundation/Foundation.h>
 #import "SpotifySDKBridgeHeader.h"
 
-static NSString * const spotifyClientID = @"ff19e2ea3546447e916e43dcda51a298";
-static NSString * const spotifyRedirectURLString = @"http://harrys-macbook-pro.local:3000/spotify-login-callback";
+
 
 
 @implementation SpotifySDKBridge
 
-
-
+AppDelegate *appDelegate;
+          
 
 RCT_EXPORT_MODULE();
 
-SPTConfiguration *configuration;
 
-RCT_EXPORT_METHOD(
-    sessionManager:(SPTSessionManager *)manager didInitiateSession:(SPTSession *)session {
-      NSLog(@"success: %@", session);
-    }
-);
 
-RCT_EXPORT_METHOD(
-    sessionManager:(SPTSessionManager *)manager didFailWithError:(NSError *)error {
-      NSLog(@"fail: %@", error);
-    }
-);
 
-RCT_EXPORT_METHOD(
-    sessionManager:(SPTSessionManager *)manager didRenewSession:(SPTSession *)session {
-      NSLog(@"renewed: %@", session);
-    }
-);
 
-RCT_EXPORT_METHOD(
-    configure {
-      configuration = [SPTConfiguration configurationWithClientID:spotifyClientID redirectURL:[NSURL URLWithString:spotifyRedirectURLString]];
-    }
-                  
-);
+RCT_EXPORT_METHOD(instantiateBridge)
+{
+  dispatch_async(dispatch_get_main_queue(), ^{
+    self.appDelegate  = (AppDelegate*)[[UIApplication sharedApplication] delegate];
+  });
+  [self.appDelegate initConfigure];
+}
+
+RCT_EXPORT_METHOD(configure)
+{
+  [self.appDelegate configureConfigure];
+  
+}
+
+RCT_EXPORT_METHOD(auth)
+{
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self.appDelegate invokeAuthModal];
+  });
+  
+}
+
+
+RCT_EXPORT_METHOD(initRemote)
+{
+  [self.appDelegate initAppRemote];
+}
+
+
+
+RCT_EXPORT_METHOD(isSpotifyInstalled:(RCTResponseSenderBlock)callback) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSNumber *result = [NSNumber numberWithBool:[self.appDelegate isSpotifyInstalled]];
+    callback(@[[NSNull null], result]);
+  });
+}
+
+RCT_EXPORT_METHOD(start:(NSString *)uri jsCallback:(RCTResponseSenderBlock)jsCallback) {
+//  dispatch_async(dispatch_get_main_queue(), ^{
+//    if (!self.appRemote.connected) {
+//      jsCallback(@[[NSNull null], [NSNumber numberWithInt:0]]);
+//    } else {
+//      self.appRemote.playerAPI.delegate = self;
+//      [self.appRemote.playerAPI play:uri callback:^(id _Nullable result, NSError * _Nullable error) {
+//        NSLog(@"fuck you");
+//        if (error) {
+//          NSLog(@"Error at play callback: %@", error);
+//        } else {
+//          NSLog(@"No error at play callback");
+//          jsCallback(@[[NSNull null], result]);
+//        }
+//      }];
+//    }
+//  });
+}
+
+RCT_EXPORT_METHOD(res:(RCTResponseSenderBlock)jsCallback) {
+  [self.appDelegate resume:jsCallback];
+}
+
 
 @end

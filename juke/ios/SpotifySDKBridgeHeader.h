@@ -7,14 +7,13 @@
 //
 
 #import <React/RCTBridgeModule.h>
-#import "SpotifyiOS.framework/Headers/SpotifyiOS.h"
+#import "AppDelegate.h"
 
-@interface SpotifySDKBridge : NSObject <RCTBridgeModule, SPTSessionManagerDelegate>
+@interface SpotifySDKBridge : NSObject <RCTBridgeModule>
 
-@property (nonatomic, strong) SPTSessionManager *sessionManager;
-@property (nonatomic, strong) SPTConfiguration *configuration;
 
-//@property NSString *spotifyClientID;
-//@property (nonatomic) NSURL *spotifyRedirectURL;
+@property AppDelegate *appDelegate;
+
+
 
 @end

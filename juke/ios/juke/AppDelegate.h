@@ -6,16 +6,24 @@
  */
 
 #import <React/RCTBridgeDelegate.h>
+#import <React/RCTBridgeModule.h>
 #import <UIKit/UIKit.h>
 #import "../SpotifyiOS.framework/Headers/SPTSessionManager.h"
+#import "../SpotifyiOS.framework/Headers/SpotifyiOS.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, SPTSessionManagerDelegate, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, RCTBridgeModule>
 
-@property (nonatomic, strong) SPTSessionManager *sessionManager;
-@property (nonatomic, strong) SPTConfiguration *configuration;
 
 @property (nonatomic, strong) UIWindow *window;
 
+@property (nonatomic, strong) SPTAppRemote *appRemote;
+@property (nonatomic, strong) SPTSessionManager *sessionManager;
+@property (nonatomic, strong) SPTConfiguration *configuration;
 
-
+- (void)initConfigure;
+- (void)configureConfigure;
+- (void)invokeAuthModal;
+- (void)initAppRemote;
+- (void)resume:(RCTResponseSenderBlock)jsCallback;
+- (BOOL)isSpotifyInstalled;
 @end
