@@ -51,28 +51,9 @@ export default class Landing extends Component {
                 <Button
                     style = {styles.createLobbyButton}
                     onPress = {() => {
-                        spotifySDKBridge.instantiateBridge();
-                        socket.emit("bp1");
-                        spotifySDKBridge.configure();
-                        socket.emit("bp2");
-                        spotifySDKBridge.isSpotifyInstalled((error, result) => {
-                            if (error) {
-                                Alert.alert(error);
-                            } else if (result == 0) {
-                                Alert.alert("Spotify is not installed");
-                            } else if (result == 1) {
-                                Alert.alert("spotify is installed");
-                            } else {
-                                Alert.alert("Not sure if spotify is installed:");
-                                Alert.alert("result = " + result);
-                            }
-                        });
-                        socket.emit("setHash");
-                        socket.on("getHash", (data) => {
-                            navigate("CreateLobby", {
-                                socket: socket,
-                                spotifySDKBridge: spotifySDKBridge
-                            });
+                        navigate("CreateLobby", {
+                            socket: socket,
+                            spotifySDKBridge: spotifySDKBridge
                         });
                     }}
                     title = "Create Lobby"

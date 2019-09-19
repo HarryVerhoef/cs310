@@ -37,10 +37,11 @@ RCT_EXPORT_METHOD(configure)
   
 }
 
-RCT_EXPORT_METHOD(auth)
+RCT_EXPORT_METHOD(auth:(RCTResponseSenderBlock)callback)
 {
   dispatch_async(dispatch_get_main_queue(), ^{
-    [self.appDelegate invokeAuthModal];
+    NSNumber *result = [NSNumber numberWithBool:[self.appDelegate invokeAuthModal]];
+    callback(@[[NSNull null], result]);
   });
   
 }
@@ -57,6 +58,7 @@ RCT_EXPORT_METHOD(isSpotifyInstalled:(RCTResponseSenderBlock)callback) {
   dispatch_async(dispatch_get_main_queue(), ^{
     NSNumber *result = [NSNumber numberWithBool:[self.appDelegate isSpotifyInstalled]];
     callback(@[[NSNull null], result]);
+    
   });
 }
 
@@ -79,8 +81,18 @@ RCT_EXPORT_METHOD(start:(NSString *)uri jsCallback:(RCTResponseSenderBlock)jsCal
 //  });
 }
 
+
 RCT_EXPORT_METHOD(res:(RCTResponseSenderBlock)jsCallback) {
   [self.appDelegate resume:jsCallback];
+}
+
+RCT_EXPORT_METHOD(getPlaylists:(RCTResponseSenderBlock)jsCallback) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSLog(@"getPlaylists called.");
+    NSArray *result = [self.appDelegate getPlaylists];
+    jsCallback(@[[NSNull null], result]);
+    NSLog(@"getPlaylists finished.");
+  });
 }
 
 

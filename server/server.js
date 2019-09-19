@@ -5,6 +5,7 @@ var crypto = require("crypto");
 var axios = require("axios");
 var queryString = require("querystring");
 var bodyParser = require('body-parser');
+var mongo = require("mongodb").MongoClient;
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
@@ -48,8 +49,35 @@ app.post("/swap", async function(req, res) {
 
 });
 
-app.post("/refresh", function(req, res) {
-    console.log("refresh called baby");
+app.post("/refresh", async function(req, res) {
+    console.log("post /refresh");
+    const url = "https://accounts.spotify.com/api/token";
+    const body = {
+        grant_type: "refresh_token",
+        refresh_token: req.body.refresh_token
+    }
+    const config = {
+        headers: {
+            "Authorization": "Basic " + Buffer.from(client_id + ":" + client_secret).toString("base64"),
+        }
+    }
+
+    var res2;
+    var response = await axios.post(url, queryString.stringify(body), config)
+        .then((response) => {
+            var body = response.data;
+            console.log(body);
+            // var cipher = crypto.createCipheriv("aes192", secretKey, "Sidy3FcOhstS-s{W");
+            // var crypt = cipher.update(body.refresh_token, "utf8", "hex");
+            // crypt += cipher.final("hex");
+            // body.refresh_token = crypt;
+            res2 = body;
+        }).catch((error) => {
+            console.log(error);
+        });
+    res.send(res2);
+    return res2;
+
 });
 
 app.post("swap", function(req, res) {

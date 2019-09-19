@@ -22,8 +22,10 @@
 
 - (void)initConfigure;
 - (void)configureConfigure;
-- (void)invokeAuthModal;
+- (BOOL)invokeAuthModal;
 - (void)initAppRemote;
 - (void)resume:(RCTResponseSenderBlock)jsCallback;
 - (BOOL)isSpotifyInstalled;
+- (NSArray *)getPlaylists;
+- (BOOL)refreshSession;
 @end

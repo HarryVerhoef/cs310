@@ -63,6 +63,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 {
   NSLog(@"success: %@", session);
   self.appRemote.connectionParameters.accessToken = session.accessToken;
+  
   [self.appRemote connect];
 }
 
@@ -99,6 +100,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 - (void)appRemoteDidEstablishConnection:(SPTAppRemote *)appRemote
 {
   // Connection was successful, you can begin issuing commands
+  NSLog(@"appRemote did establish connection");
   self.appRemote.playerAPI.delegate = self;
   [self.appRemote.playerAPI subscribeToPlayerState:^(id _Nullable result, NSError * _Nullable error) {
     if (error) {
@@ -143,15 +145,18 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   self.configuration.tokenSwapURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/swap"];
   self.configuration.tokenRefreshURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/refresh"];
   self.configuration.playURI = @"";
+  if (!self.refreshSession) {
+    self.sessionManager = [[SPTSessionManager alloc] initWithConfiguration:self.configuration delegate:self];
+  }
   
-  self.sessionManager = [[SPTSessionManager alloc] initWithConfiguration:self.configuration delegate:self];
   NSLog(@"configure left");
 }
 
-- (void) invokeAuthModal {
+- (BOOL) invokeAuthModal {
     NSLog(@"auth entered");
     SPTScope scope = SPTAppRemoteControlScope;
-    
+  if (!self.refreshSession) {
+    NSLog(@"No need to refresh session");
     if (@available(iOS 11, *)) {
       // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
       [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
@@ -160,12 +165,33 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
       [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
     }
     NSLog(@"auth left");
+    return YES;
+  } else {
+    NSLog(@"Refreshed session from within auth...");
+    return NO;
+  }
+  
 }
 
 - (void) initAppRemote {
   NSLog(@"Initialising AppRemote...");
   self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
   self.appRemote.delegate = self;
+}
+
+- (BOOL) refreshSession {
+  if (self.appRemote.connectionParameters.accessToken && self.sessionManager.session.isExpired) {
+    NSLog(@"Attempting to refresh access token...");
+    [self.sessionManager renewSession];
+    self.appRemote.connectionParameters.accessToken = self.sessionManager.session.accessToken;
+    NSLog(@"Finished attempting to refresh access token.");
+    return YES;
+  } else {
+    return NO;
+  }
+  
+  
+  
 }
 
 - (void) resume:(RCTResponseSenderBlock)jsCallback {
@@ -175,20 +201,38 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   [self.appRemote.playerAPI resume:^(id  _Nullable result, NSError * _Nullable error) {
     NSLog(@"resume callback called");
     if (error) {
-      NSLog(@"resume callback error");
-      NSLog(error.localizedDescription);
+      NSLog(@"resume callback error: %@", error.localizedDescription);
     } else {
       NSLog(@"resume callback no error");
       jsCallback(@[[NSNull null], result]);
     }
   }
    ];
-
 }
 
 - (BOOL) isSpotifyInstalled {
-  
   return self.sessionManager.isSpotifyAppInstalled;
+}
+
+- (NSArray *)getPlaylists {
+  if (self.appRemote.isConnected) {
+    
+    NSLog(@"Attempting to get playlists and appRemote is connected...");
+    __block NSArray *contentItems;
+    [self.appRemote.contentAPI fetchRootContentItemsForType:SPTAppRemoteContentTypeDefault callback:^(id  _Nullable result, NSError * _Nullable error) {
+      if (error) {
+        NSLog(@"Error retrieving Root Content Items: %@", error.localizedDescription);
+      } else {
+        NSLog(@"returning result");
+        contentItems = result;
+      }
+    }];
+    NSLog(@"Finished retrieving root content items.");
+    return contentItems;
+  } else {
+    NSLog(@"Attempted to get playlists but appRemote was not connected.");
+    return @[];
+  }
 }
 
 @end

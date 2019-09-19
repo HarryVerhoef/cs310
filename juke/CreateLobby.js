@@ -13,7 +13,8 @@ import {
     Touchable,
     NativeModules,
     Platform,
-    Linking
+    Linking,
+    Modal
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
@@ -21,6 +22,16 @@ import io from 'socket.io-client/dist/socket.io';
 
 
 export default class CreateLobby extends Component {
+
+    state = {
+        modalVisible: true,
+        isConnectedToSpotify: false
+    };
+
+    setModableVisible(visible) {
+        this.setState({modalVisible: visible});
+    }
+
     constructor(props) {
         super(props);
     }
@@ -28,51 +39,97 @@ export default class CreateLobby extends Component {
     render() {
 
         const {navigate} = this.props.navigation;
-        const socket = this.props.navigation.getParam("socket", 0);
-        const spotifySDKBridge = this.props.navigation.getParam("spotifySDKBridge", 0);
+        socket = this.props.navigation.getParam("socket", 0);
+        // spotifySDKBridge = this.props.navigation.getParam("spotifySDKBridge", 0);
+        spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
-        spotifySDKBridge.isSpotifyInstalled((error, result) => {
-            if (error) {
-                Alert.alert(error);
-            } else if (result == 0) {
-                // Spotify is not installed.
-                Linking.openURL(Platform.select({
-                    ios: "itms-apps://itunes.apple.com/app/id324684580",
-                    android: "undefined"
-                }));
-            } else if (result == 1) {
-                // Spotify is installed
-                spotifySDKBridge.initRemote();
-                socket.emit("bp3");
-                spotifySDKBridge.auth();
-                socket.emit("bp4");
-            } else {
-                Alert.alert("Not sure if spotify is installed: " + result);
-            }
-        });
+
+
 
         return (
             <View style = {styles.lobbySettingsBody}>
-                <TextInput
-                    style = {styles.lobbyNameInput}
-                    onChangeText = {(text) => this.setState({text})}
-                    placeholder = "Lobby Name"
-                    placeholderTextColor = "#fff"
-                />
+            <View style = {styles.modalView}>
+            <TouchableHighlight
+            style = {styles.connectToSpotify}
+            onPress = {() => {
+                spotifySDKBridge.instantiateBridge();
+                socket.emit("bp1");
+                spotifySDKBridge.configure();
+                socket.emit("bp2");
+
+                spotifySDKBridge.auth((error, result) => {
+                    if (error) {
+                        Alert.alert(result);
+                    }
+                    if (result == 1) {
+                        Alert.alert("result = 1");
+                        socket.emit("bp4");
+                        spotifySDKBridge.initRemote();
+                        socket.emit("bp3");
+                    } else if (result == 0) {
+                        Alert.alert("result = 0");
+                    }
+                });
+
+                this.state.isConnectedToSpotify = true;
+                this.setModableVisible(!this.state.modalVisible);
+                socket.emit("setHash");
+                socket.on("getHash", (data) => {
+                    Alert.alert("got hash");
+                });
+                // spotifySDKBridge.isSpotifyInstalled((error, result) => {
+                //     Alert.alert("isSpotifyInstalled callback invoked");//liiu
+                //     if (error) {
+                //         Alert.alert(error);
+                //     } else if (result == 0) {
+                //         // Spotify is not installed
+                //         Linking.openURL(Platform.select({
+                //             ios: "itms-apps://itunes.apple.com/app/id324684580",
+                //             android: "undefined"
+                //         }));
+                //     } else if (result == 1) {
+                //         socket.emit("setHash");
+                //         socket.on("getHash", (data) => {
+                //             spotifySDKBridge.initRemote();
+                //             socket.emit("bp3");
+                //             spotifySDKBridge.auth();
+                //             socket.emit("bp4");
+                //             this.state.isConnectedToSpotify = true;
+                //             this.setModableVisible(!this.state.modalVisible);
+                //         });
+                //
+                //     } else {
+                //         Alert.alert("Not sure if spotify is installed: " + result);
+                //     }
+                // });
+            }}
+            >
+            <View style = {styles.spotifyConnectButton}>
+                <Text style = {styles.spotifyButtonText}>Connect to Spotify</Text>
+            </View>
+            </TouchableHighlight>
+            </View>
+                <View
+                
+                >
+                    <View style = {styles.modalViewStyle}>
+                        <View style={styles.modalBody}>
+                        <Text style={styles.modalText}>In order for juke to work we need your permission to talk to Spotify...</Text>
+
+                        </View>
+                    </View>
+                </View>
+
                 <TouchableHighlight
                     style = {styles.uploadPlaylistTouchable}
                     onPress = {() => {
-
-                        // spotifySDKBridge.start("spotify:track:3a1lNhkSLSkpJE4MSHpDu9", (error, events) => {
-                        //     if (error) {
-                        //         Alert.alert("Error" + error);
-                        //     } else {
-                        //         Alert.alert("Event");
-                        //         this.setState({events: events});
-                        //         Alert.alert(events);
-                        //         Alert.alert("events" + events);
-                        //     }
-                        // });
+                        spotifySDKBridge.getPlaylists((error, result) => {
+                            if (error) {
+                                Alert.alert("Error: " + error);
+                            } else {
+                                Alert.alert("Result : " + result);
+                            }
+                        });
                     }}
                 >
                     <View style={styles.uploadPlaylistView}>
@@ -151,5 +208,41 @@ const styles = StyleSheet.create({
     uploadPlaylistText: {
         textAlign: "center",
         color: "#fff"
+    },
+    modalViewStyle: {
+        flex: 1,
+        backgroundColor: "rgba(21,21,21,0.65)",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    modalBody: {
+        backgroundColor: "#fff",
+        borderRadius: 25,
+        textAlign: "center",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    spotifyConnectButton: {
+        width: 150,
+        height: 150,
+        margin: 20,
+        textAlign: "center",
+        backgroundColor: "#1db954",
+        borderRadius: 25,
+        justifyContent: "center"
+    },
+    modalText: {
+        textAlign: "center",
+        margin: 20
+    },
+    spotifyButtonText: {
+        textAlign: "center",
+        alignSelf: "center",
+        color: "#fff"
+    },
+    modalView: {
+        flex: 1,
+
     }
+
 });
