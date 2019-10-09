@@ -80,6 +80,31 @@ app.post("/refresh", async function(req, res) {
 
 });
 
+app.post("/get_id", async function(req, res) {
+    console.log("post /get_id");
+    console.log(req.body);
+
+    const url = "https://api.spotify.com/v1/me";
+    const body = {};
+    const config = {
+        headers: {
+            "Authorization": req.body.access_token // Access token
+        }
+    }
+
+    var res2;
+    var response = await axios.post(url, queryString.stringify(body), config)
+        .then((response) => {
+            var body = response.data;
+            console.log(body);
+            res2 = body;
+        }).catch((error) => {
+            console.log(error);
+        });
+    res.send(res2);
+    return res2;
+});
+
 app.post("swap", function(req, res) {
     console.log("post swap");
 });

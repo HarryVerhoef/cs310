@@ -11,7 +11,7 @@
 #import "../SpotifyiOS.framework/Headers/SPTSessionManager.h"
 #import "../SpotifyiOS.framework/Headers/SpotifyiOS.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, SPTSessionManagerDelegate, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, RCTBridgeModule>
+@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, SPTAppRemoteDelegate, SPTAppRemotePlayerStateDelegate, RCTBridgeModule, SPTSessionManagerDelegate>
 
 
 @property (nonatomic, strong) UIWindow *window;
@@ -20,12 +20,8 @@
 @property (nonatomic, strong) SPTSessionManager *sessionManager;
 @property (nonatomic, strong) SPTConfiguration *configuration;
 
-- (void)initConfigure;
-- (void)configureConfigure;
 - (BOOL)invokeAuthModal;
-- (void)initAppRemote;
-- (void)resume:(RCTResponseSenderBlock)jsCallback;
-- (BOOL)isSpotifyInstalled;
 - (NSArray *)getPlaylists;
-- (BOOL)refreshSession;
+- (BOOL)playURI:(NSString *)uri;
+- (BOOL)connectAppRemote;
 @end

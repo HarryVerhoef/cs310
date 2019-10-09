@@ -23,44 +23,38 @@ RCT_EXPORT_MODULE();
 
 
 
-RCT_EXPORT_METHOD(instantiateBridge)
+RCT_EXPORT_METHOD(instantiateBridge:(RCTResponseSenderBlock)jsCallback)
 {
   dispatch_async(dispatch_get_main_queue(), ^{
     self.appDelegate  = (AppDelegate*)[[UIApplication sharedApplication] delegate];
+    jsCallback(@[[NSNull null], @1]);
   });
-  [self.appDelegate initConfigure];
-}
-
-RCT_EXPORT_METHOD(configure)
-{
-  [self.appDelegate configureConfigure];
   
+//  [self.appDelegate initConfigure];
 }
 
-RCT_EXPORT_METHOD(auth:(RCTResponseSenderBlock)callback)
+
+RCT_EXPORT_METHOD(auth:(RCTResponseSenderBlock)jsCallback)
 {
   dispatch_async(dispatch_get_main_queue(), ^{
     NSNumber *result = [NSNumber numberWithBool:[self.appDelegate invokeAuthModal]];
-    callback(@[[NSNull null], result]);
+    jsCallback(@[[NSNull null], result]);
   });
   
 }
 
-
-RCT_EXPORT_METHOD(initRemote)
-{
-  [self.appDelegate initAppRemote];
+RCT_EXPORT_METHOD(getPlaylists:(RCTResponseSenderBlock)jsCallback) {
+  NSArray *result = [self.appDelegate getPlaylists];
+  jsCallback(@[[NSNull null], result]);
 }
 
-
-
-RCT_EXPORT_METHOD(isSpotifyInstalled:(RCTResponseSenderBlock)callback) {
+RCT_EXPORT_METHOD(play:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallback) {
   dispatch_async(dispatch_get_main_queue(), ^{
-    NSNumber *result = [NSNumber numberWithBool:[self.appDelegate isSpotifyInstalled]];
-    callback(@[[NSNull null], result]);
-    
+    NSNumber *result = [NSNumber numberWithBool:[self.appDelegate playURI:uri]];
+    jsCallback(@[[NSNull null], result]);
   });
 }
+
 
 RCT_EXPORT_METHOD(start:(NSString *)uri jsCallback:(RCTResponseSenderBlock)jsCallback) {
 //  dispatch_async(dispatch_get_main_queue(), ^{
@@ -81,19 +75,14 @@ RCT_EXPORT_METHOD(start:(NSString *)uri jsCallback:(RCTResponseSenderBlock)jsCal
 //  });
 }
 
-
-RCT_EXPORT_METHOD(res:(RCTResponseSenderBlock)jsCallback) {
-  [self.appDelegate resume:jsCallback];
-}
-
-RCT_EXPORT_METHOD(getPlaylists:(RCTResponseSenderBlock)jsCallback) {
+RCT_EXPORT_METHOD(connect:(RCTResponseSenderBlock)jsCallback) {
   dispatch_async(dispatch_get_main_queue(), ^{
-    NSLog(@"getPlaylists called.");
-    NSArray *result = [self.appDelegate getPlaylists];
+    NSNumber *result = [NSNumber numberWithBool:[self.appDelegate connectAppRemote]];
     jsCallback(@[[NSNull null], result]);
-    NSLog(@"getPlaylists finished.");
   });
 }
+
+
 
 
 @end

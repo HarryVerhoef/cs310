@@ -52,30 +52,45 @@ export default class CreateLobby extends Component {
             <TouchableHighlight
             style = {styles.connectToSpotify}
             onPress = {() => {
-                spotifySDKBridge.instantiateBridge();
-                socket.emit("bp1");
-                spotifySDKBridge.configure();
-                socket.emit("bp2");
-
-                spotifySDKBridge.auth((error, result) => {
+                // spotifySDKBridge.instantiateBridge();
+                // socket.emit("bp1");
+                // spotifySDKBridge.configure();
+                // socket.emit("bp2");
+                spotifySDKBridge.instantiateBridge((error, result) => {
                     if (error) {
-                        Alert.alert(result);
-                    }
-                    if (result == 1) {
-                        Alert.alert("result = 1");
-                        socket.emit("bp4");
-                        spotifySDKBridge.initRemote();
-                        socket.emit("bp3");
+                        Alert.alert("Error instantiating bridge: " + error);
+                    } else if (result == 1) {
+                        socket.emit("bp1");
+                        spotifySDKBridge.auth((error, result) => {
+                            if (error) {
+                                Alert.alert("Error authenticating: " + error);
+                            } else if (result == 1) {
+                                socket.emit("bp2");
+                                // spotifySDKBridge.connect((error, result) => {
+                                //     if (error) {
+                                //         Alert.alert("Error connecting app remote: " + error);
+                                //     } else if (result == 1) {
+                                //         // appRemote is connected
+                                //         socket.emit("bp3");
+                                //     } else if (result == 0) {
+                                //         Alert.alert("Result = 0 @ connect");
+                                //     }
+                                // });
+                            } else if (result == 0) {
+                                Alert.alert("Result = 0 @ auth");
+                            }
+                        });
                     } else if (result == 0) {
-                        Alert.alert("result = 0");
+                        Alert.alert("Result = 0 @ instantiateBridge");
                     }
                 });
+
 
                 this.state.isConnectedToSpotify = true;
                 this.setModableVisible(!this.state.modalVisible);
                 socket.emit("setHash");
                 socket.on("getHash", (data) => {
-                    Alert.alert("got hash");
+                    // got hashs
                 });
                 // spotifySDKBridge.isSpotifyInstalled((error, result) => {
                 //     Alert.alert("isSpotifyInstalled callback invoked");//liiu
@@ -110,7 +125,7 @@ export default class CreateLobby extends Component {
             </TouchableHighlight>
             </View>
                 <View
-                
+
                 >
                     <View style = {styles.modalViewStyle}>
                         <View style={styles.modalBody}>
@@ -128,6 +143,8 @@ export default class CreateLobby extends Component {
                                 Alert.alert("Error: " + error);
                             } else {
                                 Alert.alert("Result : " + result);
+                                this.setState({result: result});
+                                Alert.alert(this.state.result);
                             }
                         });
                     }}
@@ -141,9 +158,13 @@ export default class CreateLobby extends Component {
                     style = {styles.touchableHighlightBottom}
                     onPress = {() => {
                         // spotifySDKBridge.initRemote();
-                        spotifySDKBridge.res((error, events) => {
-                            Alert.alert("Error: " + error);
-                            Alert.alert("Events: " + events);
+                        spotifySDKBridge.play("spotify:track:3nc420PXjTdBV5TN0gCFkS", (error, events) => {
+                            if (error) {
+                                Alert.alert("Error playing uri: " + error);
+                            } else {
+                                // Should be fineeee
+                                socket.emit("bp4");
+                            }
                         });
                     }}
                 >

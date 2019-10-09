@@ -10,6 +10,7 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import "../SpotifyiOS.framework/Headers/SpotifyiOS.h"
 
 @implementation AppDelegate
 
@@ -24,15 +25,32 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  self.configuration =
+  [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:[NSURL URLWithString:spotifyRedirectURLString]];
+  self.configuration.tokenSwapURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/swap"];
+  self.configuration.tokenRefreshURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/refresh"];
+  self.sessionManager = [SPTSessionManager sessionManagerWithConfiguration:self.configuration delegate:self];
+  
+  
   NSLog(@"AppDelegate main application method called :O");
-  NSURL *jsCodeLocation;
+//  NSURL *jsCodeLocation;
+//
+//  jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+//
+//
+//  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+//  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
+//                                                   moduleName:@"juke"
+//                                            initialProperties:nil];
   
-  jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
-  
-  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
-                                                   moduleName:@"juke"
-                                            initialProperties:nil];
+  NSURL *jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+
+  [[RCTBundleURLProvider sharedSettings] setJsLocation:jsCodeLocation.host];
+
+  RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
+                                               moduleName:@"juke"
+                                               initialProperties:nil
+                                               launchOptions:launchOptions];
 
   rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
 
@@ -57,14 +75,27 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 }
 
 
+
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+  NSLog(@"AppDelegate application method called.");
+  [self.sessionManager application:app openURL:url options:options];
+  return YES;
+}
+
 #pragma mark - SPTSessionManagerDelegate
 
 - (void)sessionManager:(SPTSessionManager *)manager didInitiateSession:(SPTSession *)session
 {
   NSLog(@"success: %@", session);
-  self.appRemote.connectionParameters.accessToken = session.accessToken;
   
+  
+  self.appRemote.delegate = self;
+  
+  self.appRemote.connectionParameters.accessToken = session.accessToken;
   [self.appRemote connect];
+  
 }
 
 - (void)sessionManager:(SPTSessionManager *)manager didFailWithError:(NSError *)error
@@ -77,24 +108,16 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   NSLog(@"sessionManager renewed: %@", session);
 }
 
-
-- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
-{
-  NSLog(@"AppDelegate application method called.");
-  [self.sessionManager application:app openURL:url options:options];
-  return YES;
-}
-
 #pragma mark - SPTAppRemoteDelegate
 
 - (void)appRemote:(SPTAppRemote *)appRemote didDisconnectWithError:(NSError *)error
 {
-  NSLog(@"disconnected");
+  NSLog(@"disconnected: %@", error);
 }
 
 - (void)appRemote:(SPTAppRemote *)appRemote didFailConnectionAttemptWithError:(NSError *)error
 {
-  NSLog(@"failed");
+  NSLog(@"failed: %@", error);
 }
 
 - (void)appRemoteDidEstablishConnection:(SPTAppRemote *)appRemote
@@ -104,7 +127,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   self.appRemote.playerAPI.delegate = self;
   [self.appRemote.playerAPI subscribeToPlayerState:^(id _Nullable result, NSError * _Nullable error) {
     if (error) {
-      NSLog(@"appRemote error: %@", error.localizedDescription);
+      NSLog(@"appRemote error while subscribing to player state: %@", error.localizedDescription);
     }
   }];
 }
@@ -127,6 +150,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
   if (self.appRemote.connectionParameters.accessToken) {
+    self.appRemote.delegate = self;
     [self.appRemote connect];
     NSLog(@"Application became active and the access token was set so the appRemote attempted to connect.");
   } else {
@@ -134,105 +158,150 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   }
 }
 
-- (void) initConfigure {
-  NSLog(@"Initialising configuration");
-  self.configuration  = [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:[NSURL URLWithString:spotifyRedirectURLString]];
-}
 
-- (void) configureConfigure {
-  NSLog(@"configure entered");
-  
-  self.configuration.tokenSwapURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/swap"];
-  self.configuration.tokenRefreshURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/refresh"];
-  self.configuration.playURI = @"";
-  if (!self.refreshSession) {
-    self.sessionManager = [[SPTSessionManager alloc] initWithConfiguration:self.configuration delegate:self];
-  }
-  
-  NSLog(@"configure left");
-}
 
 - (BOOL) invokeAuthModal {
-    NSLog(@"auth entered");
-    SPTScope scope = SPTAppRemoteControlScope;
-  if (!self.refreshSession) {
-    NSLog(@"No need to refresh session");
-    if (@available(iOS 11, *)) {
+  NSLog(@"auth entered");
+  SPTScope scope = SPTUserFollowReadScope | SPTAppRemoteControlScope | SPTPlaylistReadCollaborativeScope | SPTUserLibraryReadScope | SPTUserTopReadScope | SPTStreamingScope | SPTUserModifyPlaybackStateScope | SPTUserReadCurrentlyPlayingScope;
+
+  
+  if (@available(iOS 11, *)) {
       // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
       [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
-    } else {
+  } else {
       // Use this on iOS versions < 11 to use SFSafariViewController
       [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
-    }
-    NSLog(@"auth left");
-    return YES;
-  } else {
-    NSLog(@"Refreshed session from within auth...");
-    return NO;
   }
   
-}
-
-- (void) initAppRemote {
-  NSLog(@"Initialising AppRemote...");
+//  if ([self.appRemote authorizeAndPlayURI:@""]) {
+//    //Spotify app is ready for authorisation
+//    if (@available(iOS 11, *)) {
+//        // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
+//        [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
+//    } else {
+//        // Use this on iOS versions < 11 to use SFSafariViewController
+//        [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
+//    }
+//  } else {
+//    NSLog(@"Failed at authorizaAndPlayURI");
+//  }
+  
+  
   self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
-  self.appRemote.delegate = self;
-}
-
-- (BOOL) refreshSession {
-  if (self.appRemote.connectionParameters.accessToken && self.sessionManager.session.isExpired) {
-    NSLog(@"Attempting to refresh access token...");
-    [self.sessionManager renewSession];
-    self.appRemote.connectionParameters.accessToken = self.sessionManager.session.accessToken;
-    NSLog(@"Finished attempting to refresh access token.");
-    return YES;
-  } else {
-    return NO;
-  }
   
-  
+  return YES;
   
 }
 
-- (void) resume:(RCTResponseSenderBlock)jsCallback {
-  NSLog(@"appRemote is connected: %@", self.appRemote.isConnected ? @"YES" : @"NO");
+- (void)httpRequest {
+  // HTTP POST request code taken from https://stackoverflow.com/a/39848904
   
-  self.appRemote.playerAPI.delegate = self;
-  [self.appRemote.playerAPI resume:^(id  _Nullable result, NSError * _Nullable error) {
-    NSLog(@"resume callback called");
-    if (error) {
-      NSLog(@"resume callback error: %@", error.localizedDescription);
-    } else {
-      NSLog(@"resume callback no error");
-      jsCallback(@[[NSNull null], result]);
-    }
-  }
-   ];
+  NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://harrys-macbook-pro.local:3000/get_id"]];
+
+  NSString *userUpdate =[NSString stringWithFormat:@"access_token=%@", self.sessionManager.session.accessToken];
+
+  //create the Method "GET" or "POST"
+  [urlRequest setHTTPMethod:@"POST"];
+
+  //Convert the String to Data
+  NSData *data1 = [userUpdate dataUsingEncoding:NSUTF8StringEncoding];
+
+  //Apply the data to the body
+  [urlRequest setHTTPBody:data1];
+
+  NSURLSession *session = [NSURLSession sharedSession];
+  
+  NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:urlRequest completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+      NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+      if(httpResponse.statusCode == 200) {
+          NSError *parseError = nil;
+          NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&parseError];
+          NSLog(@"The response is - %@",responseDictionary);
+          NSInteger success = [[responseDictionary objectForKey:@"success"] integerValue];
+      } else {
+          NSLog(@"Error at POST request");
+        NSLog(@"Status code: %ld", (long)[httpResponse statusCode]);
+        NSLog(@"Header fields: %@", [httpResponse allHeaderFields]);
+      }
+  }];
+  [dataTask resume];
 }
 
-- (BOOL) isSpotifyInstalled {
-  return self.sessionManager.isSpotifyAppInstalled;
-}
 
 - (NSArray *)getPlaylists {
   if (self.appRemote.isConnected) {
     
     NSLog(@"Attempting to get playlists and appRemote is connected...");
-    __block NSArray *contentItems;
-    [self.appRemote.contentAPI fetchRootContentItemsForType:SPTAppRemoteContentTypeDefault callback:^(id  _Nullable result, NSError * _Nullable error) {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    __block NSMutableArray *contentItems = [[NSMutableArray alloc] init];
+    
+    [self.appRemote.contentAPI fetchRootContentItemsForType:SPTAppRemoteContentTypeDefault callback:^(id _Nullable result, NSError * _Nullable error) {
       if (error) {
         NSLog(@"Error retrieving Root Content Items: %@", error.localizedDescription);
       } else {
-        NSLog(@"returning result");
-        contentItems = result;
+        NSLog(@"Fetched root content items");
+        
+        for (id container in result) {
+          if ([[container valueForKey:@"title"] isEqual: @"Your Library"]) {
+            [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
+              NSLog(@"Scanning Your Library...");
+              for (id container in result) {
+                if ([[container valueForKey:@"URI"] isEqual:@"spotify:playlists"]) {
+                  [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
+                    for (id playlist in result) {
+                      [contentItems addObject:[playlist valueForKey:@"title"]];
+                    }
+                    dispatch_semaphore_signal(sema);
+                  }];
+                }
+              }
+            }];
+          }
+        }
       }
     }];
+    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     NSLog(@"Finished retrieving root content items.");
+    
     return contentItems;
   } else {
     NSLog(@"Attempted to get playlists but appRemote was not connected.");
     return @[];
   }
+}
+
+- (BOOL) playURI:(NSString *)uri {
+  if (self.appRemote.isConnected) {
+    NSLog(@"appRemote is connected and playURI called so attempting to play track...");
+  } else {
+    NSLog(@"appRemote is not connected and playURI called so attempting to connect appRemote then play track...");
+    self.appRemote.delegate = self;
+    [self.appRemote connect];
+  }
+  __block bool success = NO;
+  self.appRemote.playerAPI.delegate = self;
+  [self.appRemote.playerAPI play:uri callback:^(id  _Nullable result, NSError * _Nullable error) {
+    if (error) {
+      NSLog(@"Error on play callback... %@", error.localizedDescription);
+    } else {
+      NSLog(@"Success on play callback...");
+      success = YES;
+    }
+  }];
+  return success;
+  
+}
+
+- (BOOL)connectAppRemote {
+  NSLog(@"Attempting to connect app Remote in connectAppRemote...");
+  NSLog(@"Access token: %@", self.sessionManager.session.accessToken);
+  if (self.appRemote.isConnected) {
+    NSLog(@"appRemote is already connected, no need to connect again");
+  } else {
+    self.appRemote.delegate = self;
+    [self.appRemote connect];
+  }
+  return self.appRemote.isConnected;
 }
 
 @end
