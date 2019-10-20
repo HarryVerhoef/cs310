@@ -18,7 +18,7 @@ window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 
-const socket = io("http://harrys-macbook-pro.local:3000");
+
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 export default class Landing extends Component {
@@ -43,7 +43,7 @@ export default class Landing extends Component {
                     <Button
                         style = {styles.joinLobbyButton}
                         onPress = {() => {
-                            socket.emit("joinRoom", this.state.text);
+                            // socket.emit("joinRoom", this.state.text);
                         }}
                         title = "Join Lobby"
                     />
@@ -52,7 +52,6 @@ export default class Landing extends Component {
                     style = {styles.createLobbyButton}
                     onPress = {() => {
                         navigate("CreateLobby", {
-                            socket: socket,
                             spotifySDKBridge: spotifySDKBridge
                         });
                     }}

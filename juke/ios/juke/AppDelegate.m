@@ -19,6 +19,7 @@ RCT_EXPORT_MODULE(AppDelegate);
 SPTSessionManager *sessionManager;
 SPTConfiguration *configuration;
 SPTAppRemote *appRemote;
+int expiryTime = 0;
 
 static NSString * const spotifyClientID = @"ff19e2ea3546447e916e43dcda51a298";
 static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callback";
@@ -34,23 +35,22 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
   NSLog(@"AppDelegate main application method called :O");
 //  NSURL *jsCodeLocation;
-//
+
 //  jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
-//
-//
-//  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-//  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
-//                                                   moduleName:@"juke"
-//                                            initialProperties:nil];
+
+
+  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+  RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
+                                                   moduleName:@"juke"
+                                            initialProperties:nil];
   
-  NSURL *jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
-
-  [[RCTBundleURLProvider sharedSettings] setJsLocation:jsCodeLocation.host];
-
-  RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
-                                               moduleName:@"juke"
-                                               initialProperties:nil
-                                               launchOptions:launchOptions];
+//  NSURL *jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+//
+//
+//  RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
+//                                               moduleName:@"juke"
+//                                               initialProperties:nil
+//                                               launchOptions:launchOptions];
 
   rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
 
@@ -193,12 +193,14 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
 }
 
-- (void)httpRequest {
+- (NSDictionary *)httpPostRequest:(NSString *)url {
   // HTTP POST request code taken from https://stackoverflow.com/a/39848904
   
-  NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://harrys-macbook-pro.local:3000/get_id"]];
+  NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
+  
 
   NSString *userUpdate =[NSString stringWithFormat:@"access_token=%@", self.sessionManager.session.accessToken];
+  
 
   //create the Method "GET" or "POST"
   [urlRequest setHTTPMethod:@"POST"];
@@ -211,11 +213,15 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
   NSURLSession *session = [NSURLSession sharedSession];
   
+  __block NSMutableDictionary *responseDictionary = [[NSMutableDictionary alloc] init];
+  dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+  
+  
   NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:urlRequest completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
       NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
       if(httpResponse.statusCode == 200) {
           NSError *parseError = nil;
-          NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&parseError];
+          responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&parseError];
           NSLog(@"The response is - %@",responseDictionary);
           NSInteger success = [[responseDictionary objectForKey:@"success"] integerValue];
       } else {
@@ -223,50 +229,58 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
         NSLog(@"Status code: %ld", (long)[httpResponse statusCode]);
         NSLog(@"Header fields: %@", [httpResponse allHeaderFields]);
       }
+    dispatch_semaphore_signal(sema);
   }];
   [dataTask resume];
+  dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+  return responseDictionary;
 }
 
 
-- (NSArray *)getPlaylists {
+- (BOOL)getPlaylists {
   if (self.appRemote.isConnected) {
     
     NSLog(@"Attempting to get playlists and appRemote is connected...");
-    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    __block NSMutableArray *contentItems = [[NSMutableArray alloc] init];
+    if ([self httpPostRequest:@"http://harrys-macbook-pro.local:3000/get_playlists"]) {
+      return YES;
+    } else {
+      return NO;
+    }
+//    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+//    __block NSMutableArray *contentItems = [[NSMutableArray alloc] init];
+//
+//    [self.appRemote.contentAPI fetchRootContentItemsForType:SPTAppRemoteContentTypeDefault callback:^(id _Nullable result, NSError * _Nullable error) {
+//      if (error) {
+//        NSLog(@"Error retrieving Root Content Items: %@", error.localizedDescription);
+//      } else {
+//        NSLog(@"Fetched root content items");
+//
+//        for (id container in result) {
+//          if ([[container valueForKey:@"title"] isEqual: @"Your Library"]) {
+//            [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
+//              NSLog(@"Scanning Your Library...");
+//              for (id container in result) {
+//                if ([[container valueForKey:@"URI"] isEqual:@"spotify:playlists"]) {
+//                  [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
+//                    for (id playlist in result) {
+//                      [contentItems addObject:[playlist valueForKey:@"title"]];
+//                    }
+//                    dispatch_semaphore_signal(sema);
+//                  }];
+//                }
+//              }
+//            }];
+//          }
+//        }
+//      }
+//    }];
+//    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+//    NSLog(@"Finished retrieving root content items.");
     
-    [self.appRemote.contentAPI fetchRootContentItemsForType:SPTAppRemoteContentTypeDefault callback:^(id _Nullable result, NSError * _Nullable error) {
-      if (error) {
-        NSLog(@"Error retrieving Root Content Items: %@", error.localizedDescription);
-      } else {
-        NSLog(@"Fetched root content items");
-        
-        for (id container in result) {
-          if ([[container valueForKey:@"title"] isEqual: @"Your Library"]) {
-            [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
-              NSLog(@"Scanning Your Library...");
-              for (id container in result) {
-                if ([[container valueForKey:@"URI"] isEqual:@"spotify:playlists"]) {
-                  [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
-                    for (id playlist in result) {
-                      [contentItems addObject:[playlist valueForKey:@"title"]];
-                    }
-                    dispatch_semaphore_signal(sema);
-                  }];
-                }
-              }
-            }];
-          }
-        }
-      }
-    }];
-    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-    NSLog(@"Finished retrieving root content items.");
-    
-    return contentItems;
+//    return contentItems;
   } else {
     NSLog(@"Attempted to get playlists but appRemote was not connected.");
-    return @[];
+    return NO;
   }
 }
 

@@ -14,22 +14,30 @@ import {
     NativeModules,
     Platform,
     Linking,
-    Modal
+    Modal,
+    FlatList
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
-
+const socket;
 
 
 export default class CreateLobby extends Component {
 
     state = {
         modalVisible: true,
-        isConnectedToSpotify: false
+        isConnectedToSpotify: false,
+        playlistModal: false,
+        playlists: []
     };
 
     setModableVisible(visible) {
         this.setState({modalVisible: visible});
+    }
+
+    togglePlaylistModal(data) {
+        this.setState({playlistModal: !this.state.playlistModal});
+        this.setState({playlists: data});
     }
 
     constructor(props) {
@@ -37,14 +45,8 @@ export default class CreateLobby extends Component {
     }
 
     render() {
-
         const {navigate} = this.props.navigation;
-        socket = this.props.navigation.getParam("socket", 0);
-        // spotifySDKBridge = this.props.navigation.getParam("spotifySDKBridge", 0);
         spotifySDKBridge = NativeModules.SpotifySDKBridge;
-
-
-
 
         return (
             <View style = {styles.lobbySettingsBody}>
@@ -52,30 +54,15 @@ export default class CreateLobby extends Component {
             <TouchableHighlight
             style = {styles.connectToSpotify}
             onPress = {() => {
-                // spotifySDKBridge.instantiateBridge();
-                // socket.emit("bp1");
-                // spotifySDKBridge.configure();
-                // socket.emit("bp2");
                 spotifySDKBridge.instantiateBridge((error, result) => {
                     if (error) {
                         Alert.alert("Error instantiating bridge: " + error);
                     } else if (result == 1) {
-                        socket.emit("bp1");
                         spotifySDKBridge.auth((error, result) => {
                             if (error) {
                                 Alert.alert("Error authenticating: " + error);
                             } else if (result == 1) {
-                                socket.emit("bp2");
-                                // spotifySDKBridge.connect((error, result) => {
-                                //     if (error) {
-                                //         Alert.alert("Error connecting app remote: " + error);
-                                //     } else if (result == 1) {
-                                //         // appRemote is connected
-                                //         socket.emit("bp3");
-                                //     } else if (result == 0) {
-                                //         Alert.alert("Result = 0 @ connect");
-                                //     }
-                                // });
+                                socket = io("http://harrys-macbook-pro.local:3000");
                             } else if (result == 0) {
                                 Alert.alert("Result = 0 @ auth");
                             }
@@ -88,45 +75,31 @@ export default class CreateLobby extends Component {
 
                 this.state.isConnectedToSpotify = true;
                 this.setModableVisible(!this.state.modalVisible);
-                socket.emit("setHash");
-                socket.on("getHash", (data) => {
-                    // got hashs
-                });
-                // spotifySDKBridge.isSpotifyInstalled((error, result) => {
-                //     Alert.alert("isSpotifyInstalled callback invoked");//liiu
-                //     if (error) {
-                //         Alert.alert(error);
-                //     } else if (result == 0) {
-                //         // Spotify is not installed
-                //         Linking.openURL(Platform.select({
-                //             ios: "itms-apps://itunes.apple.com/app/id324684580",
-                //             android: "undefined"
-                //         }));
-                //     } else if (result == 1) {
-                //         socket.emit("setHash");
-                //         socket.on("getHash", (data) => {
-                //             spotifySDKBridge.initRemote();
-                //             socket.emit("bp3");
-                //             spotifySDKBridge.auth();
-                //             socket.emit("bp4");
-                //             this.state.isConnectedToSpotify = true;
-                //             this.setModableVisible(!this.state.modalVisible);
-                //         });
-                //
-                //     } else {
-                //         Alert.alert("Not sure if spotify is installed: " + result);
-                //     }
-                // });
             }}
             >
             <View style = {styles.spotifyConnectButton}>
+            <View
+                style = {styles.setPlaylistModal}
+                visible = {this.state.playlistModal}
+
+            >
+                <FlatList
+                    numColumns = {2}
+                    data = {this.state.playlists}
+                    renderItem = {({item}) => (
+                        <Item
+                            id = {item.id}
+                            title = {item.name}
+                        />
+                    )}
+                >
+                </FlatList>
+            </View>
                 <Text style = {styles.spotifyButtonText}>Connect to Spotify</Text>
             </View>
             </TouchableHighlight>
             </View>
-                <View
-
-                >
+                <View>
                     <View style = {styles.modalViewStyle}>
                         <View style={styles.modalBody}>
                         <Text style={styles.modalText}>In order for juke to work we need your permission to talk to Spotify...</Text>
@@ -139,14 +112,19 @@ export default class CreateLobby extends Component {
                     style = {styles.uploadPlaylistTouchable}
                     onPress = {() => {
                         spotifySDKBridge.getPlaylists((error, result) => {
+
                             if (error) {
                                 Alert.alert("Error: " + error);
                             } else {
                                 Alert.alert("Result : " + result);
-                                this.setState({result: result});
-                                Alert.alert(this.state.result);
+                                socket.emit("getPlaylists");
+                                socket.on("gotPlaylists", (data) => {
+                                    Alert.alert(data);
+                                    this.togglePlaylistModal(data);
+                                })
                             }
                         });
+
                     }}
                 >
                     <View style={styles.uploadPlaylistView}>
@@ -263,6 +241,12 @@ const styles = StyleSheet.create({
     },
     modalView: {
         flex: 1,
+
+    },
+    setPlaylistModal: {
+        flex: 1,
+        backgroundColor: "#fff",
+        alignSelf: "center",
 
     }
 
