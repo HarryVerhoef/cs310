@@ -95,7 +95,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
   self.appRemote.connectionParameters.accessToken = session.accessToken;
   [self.appRemote connect];
-  
 }
 
 - (void)sessionManager:(SPTSessionManager *)manager didFailWithError:(NSError *)error
@@ -165,6 +164,8 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   SPTScope scope = SPTUserFollowReadScope | SPTAppRemoteControlScope | SPTPlaylistReadCollaborativeScope | SPTUserLibraryReadScope | SPTUserTopReadScope | SPTStreamingScope | SPTUserModifyPlaybackStateScope | SPTUserReadCurrentlyPlayingScope;
 
   
+  self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
+  
   if (@available(iOS 11, *)) {
       // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
       [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
@@ -187,7 +188,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 //  }
   
   
-  self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
   
   return YES;
   

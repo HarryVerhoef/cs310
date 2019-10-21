@@ -172,7 +172,7 @@ app.get("/spotify-login-callback", function(req, res) {
 io.on("connection", (socket) => {
     console.log("User connected");
 
-    users[socket.id] = new User(socket);
+    users[socket.id] = new User(socket.id);
 
     socket.on("disconnect", (reason) => {
         console.log("User disconnected: " + reason);
@@ -207,16 +207,18 @@ io.on("connection", (socket) => {
     socket.on("bp4", function() {
         console.log("bp4");
     });
+    socket.on("getPlaylists", function() {
+        console.log("emit getPlaylists: ${socket.id}");
+        console.log(users);
+        socket.emit("gotPlaylists", users[socket.id].getPlaylists());
+    });
 
 
     app.post("/get_playlists", async function(req, res) {
         console.log("POST /get_playlists");
-        console.log(req.body.access_token);
-        console.log(users);
-        console.log(socket.id);
-        users[socket.id].access_token = req.body.access_token;
+        users[socket.id].setAccessToken(req.body.access_token);
         await get_spotify_user(req.body.access_token, (user) => {
-            users[socket.id].setUserObject(user);
+            users[socket.id].setUserObject(user.data);
             axios({
                 method: "get",
                 url: "https://api.spotify.com/v1/users/" + user.data.id + "/playlists",
@@ -225,7 +227,7 @@ io.on("connection", (socket) => {
                 }
             }).then((response) => {
                 console.log(response);
-                users[socket.id].playlists = response;
+                users[socket.id].playlists = response.data.items;
                 res.sendStatus(200);
                 return response;
             }).catch((error) => {
@@ -238,10 +240,7 @@ io.on("connection", (socket) => {
 
 });
 
-io.on("getPlaylists", (socket) => {
-    console.log("====GET_PLAYLISTS====");
-    socket.emit("gotPlaylists", users[socket.id]);
-});
+
 
 io.on("setHash", function(socket) {
     console.log("setHash recevied");
