@@ -1,5 +1,6 @@
 const User = require("./User").User;
 
+require("dotenv").config();
 var app = require("express")();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
@@ -14,10 +15,10 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 // This is how the secret key was generated:
 // console.log(crypto.randomBytes(64).toString("base64").substring(0,24));
-var secretKey = "VmaEzvW4NWHNh/hB3pxAK8JN";
+var secretKey = process.env.SECRET_KEY;
 
 var client_id = "ff19e2ea3546447e916e43dcda51a298";
-var client_secret = "7a7eb5370a54460ba06cda2ec6a0ca3b";
+var client_secret = process.env.CLIENT_SECRET;
 
 
 var users = {};
