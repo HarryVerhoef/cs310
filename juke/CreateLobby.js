@@ -16,7 +16,7 @@ import {
     Linking,
     Modal,
     FlatList,
-    Item
+    Image
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
@@ -50,7 +50,12 @@ export default class CreateLobby extends Component {
     carouselRenderItem({item}) {
         return (
             <View style={styles.playlistCard}>
-                <Text>{item.name}</Text>
+                <Image
+                    style = {width: 100, height: 100}
+                    source = {uri: require(item.images[0].url)}
+                />
+                <Text>{item.name} - item.owner.display_name</Text>
+                <Text>{item.tracks.items.length} songs</Text>
             </View>
         );
     }
@@ -158,6 +163,7 @@ export default class CreateLobby extends Component {
                 </View>
 
                 <View style = {styles.lobbySettings}>
+
                 </View>
 
                 <View style = {styles.createLobby}>

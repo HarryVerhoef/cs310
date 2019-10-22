@@ -342,7 +342,32 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
     NSLog(@"Attempting to skip song and appRemote is not connected");
     return NO;
   }
-  
+}
+
+- (BOOL)queue:(NSString*)uri {
+  if (self.appRemote.isConnected) {
+    NSLog(@"Attempting to queue song with uri: %@, with appRemote connected", uri);
+    
+    __block dispatch_semaphore_t queueSema = dispatch_semaphore_create(0);
+    __block bool success = NO;
+    
+    [self.appRemote.playerAPI enqueueTrackUri:uri callback:^(id  _Nullable result, NSError * _Nullable error) {
+      if (error) {
+        NSLog(@"Error attempting to enqueue track uri: %@", error.localizedDescription);
+      } else {
+        NSLog(@"Successfully enqueued track with uri: %@", uri);
+        success = YES;
+      }
+      dispatch_semaphore_signal(queueSema);
+    }];
+    
+    dispatch_semaphore_wait(queueSema, dispatch_time(DISPATCH_TIME_NOW,400000000));
+    return success;
+    
+  } else {
+    NSLog(@"Attempting to queue song with uri: %@, with appRemote disconnected", uri);
+    return NO;
+  }
 }
 
 @end

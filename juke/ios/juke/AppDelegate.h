@@ -25,4 +25,5 @@
 - (BOOL)playURI:(NSString *)uri;
 - (BOOL)connectAppRemote;
 - (BOOL)skipSong;
+- (BOOL)queue:(NSString *)uri;
 @end

@@ -62,4 +62,9 @@ RCT_EXPORT_METHOD(skip:(RCTResponseSenderBlock)jsCallback) {
   jsCallback(@[[NSNull null], result]);
 }
 
+RCT_EXPORT_METHOD(queue:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallback) {
+  NSNumber *result = [NSNumber numberWithBool:[self.appDelegate queue:uri]];
+  jsCallback(@[[NSNull null], result]);
+}
+
 @end
