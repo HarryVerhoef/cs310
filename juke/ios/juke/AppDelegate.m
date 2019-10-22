@@ -318,4 +318,31 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   return self.appRemote.isConnected;
 }
 
+- (BOOL)skipSong {
+  if (self.appRemote.isConnected) {
+    NSLog(@"Attempting to skip song and appRemote is connected");
+    __block dispatch_semaphore_t skipSema = dispatch_semaphore_create(0);
+    __block BOOL success = NO;
+    [self.appRemote.playerAPI skipToNext:^(id  _Nullable result, NSError * _Nullable error) {
+      if (error) {
+        NSLog(@"Error skipping next song: %@", error.localizedDescription);
+      } else {
+        NSLog(@"Skipped song");
+        success = YES;
+      }
+      dispatch_semaphore_signal(skipSema);
+    }];
+    
+    // dispatch_time takes a dispatch_time and a delta (measured in nanoseconds)
+    dispatch_semaphore_wait(skipSema, dispatch_time(DISPATCH_TIME_NOW,400000000));
+    
+    return success;
+    
+  } else {
+    NSLog(@"Attempting to skip song and appRemote is not connected");
+    return NO;
+  }
+  
+}
+
 @end

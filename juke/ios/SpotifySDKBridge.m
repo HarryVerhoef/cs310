@@ -57,5 +57,9 @@ RCT_EXPORT_METHOD(play:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallba
   });
 }
 
+RCT_EXPORT_METHOD(skip:(RCTResponseSenderBlock)jsCallback) {
+  NSNumber *result = [NSNumber numberWithBool: [self.appDelegate skipSong]];
+  jsCallback(@[[NSNull null], result]);
+}
 
 @end

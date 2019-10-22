@@ -24,4 +24,5 @@
 - (BOOL)getPlaylists;
 - (BOOL)playURI:(NSString *)uri;
 - (BOOL)connectAppRemote;
+- (BOOL)skipSong;
 @end
