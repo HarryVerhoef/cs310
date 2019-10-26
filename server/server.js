@@ -52,7 +52,6 @@ app.post("/swap", async function(req, res) {
         });
     res.send(res2);
     return res2;
-
 });
 
 app.post("/refresh", async function(req, res) {
@@ -241,7 +240,11 @@ io.on("connection", (socket) => {
 
 });
 
-
+app.post("/get-image", (req, res) => {
+    console.log("POST /get-image");
+    console.log(req);
+    res.download(req.body.img_uri);
+});
 
 io.on("setHash", function(socket) {
     console.log("setHash recevied");

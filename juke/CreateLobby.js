@@ -31,7 +31,7 @@ export default class CreateLobby extends Component {
         modalVisible: true,
         isConnectedToSpotify: false,
         playlistModal: false,
-        playlists: ["temp"]
+        playlists: [{images: [{url: "https://picsum.photos/200"}]}]
     };
 
     setModableVisible(visible) {
@@ -51,8 +51,17 @@ export default class CreateLobby extends Component {
         return (
             <View style={styles.playlistCard}>
                 <Image
-                    style = {width: 100, height: 100}
-                    source = {uri: require(item.images[0].url)}
+                    style = {{width: 100, height: 100}}
+                    source = {{
+                        uri: "http://harrys-macbook-pro.local:3000/get-image",
+                        method: "POST",
+                        headers: {
+                            Pragma: "no-cache"
+                        },
+                        body:{
+                            img_uri: item.images[0].url
+                        }
+                    }}
                 />
                 <Text>{item.name} - item.owner.display_name</Text>
                 <Text>{item.tracks.items.length} songs</Text>
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
         position: "absolute"
     },
     playlistCard: {
-        backgroundColor: "cccccc",
+        backgroundColor: "#cccccc",
         width: 200,
         height: 200
     },
