@@ -16,7 +16,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 // This is how the secret key was generated:
 // console.log(crypto.randomBytes(64).toString("base64").substring(0,24));
 var secretKey = process.env.SECRET_KEY;
-
 var client_id = "ff19e2ea3546447e916e43dcda51a298";
 var client_secret = process.env.CLIENT_SECRET;
 
@@ -243,7 +242,7 @@ io.on("connection", (socket) => {
 app.post("/get-image", (req, res) => {
     console.log("POST /get-image");
     console.log(req);
-    res.download(req.body.img_uri);
+    res.download(req.body);
 });
 
 io.on("setHash", function(socket) {
