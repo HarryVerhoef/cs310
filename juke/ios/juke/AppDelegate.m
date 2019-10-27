@@ -21,11 +21,14 @@ SPTConfiguration *configuration;
 SPTAppRemote *appRemote;
 int expiryTime = 0;
 
+NSString *idfv;
+
 static NSString * const spotifyClientID = @"ff19e2ea3546447e916e43dcda51a298";
 static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callback";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  idfv = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
   self.configuration =
   [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:[NSURL URLWithString:spotifyRedirectURLString]];
   self.configuration.tokenSwapURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/swap"];
@@ -199,7 +202,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
   
 
-  NSString *userUpdate =[NSString stringWithFormat:@"access_token=%@", self.sessionManager.session.accessToken];
+  NSString *userUpdate =[NSString stringWithFormat:@"access_token=%@&idfv=%@", self.sessionManager.session.accessToken, idfv];
   
 
   //create the Method "GET" or "POST"

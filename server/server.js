@@ -20,6 +20,7 @@ var client_id = "ff19e2ea3546447e916e43dcda51a298";
 var client_secret = process.env.CLIENT_SECRET;
 
 
+var lobbies = {};
 var users = {};
 
 app.post("/swap", async function(req, res) {
@@ -171,19 +172,20 @@ app.get("/spotify-login-callback", function(req, res) {
 io.on("connection", (socket) => {
     console.log("User connected");
 
-    users[socket.id] = new User(socket.id);
+    socket.on("login", (uid) => {
+        users[uid] = new User(uid);
+    });
+
+    socket.on("newLobby", (uid) => {
+        var roomKey = crypto.randomBytes(2).toString("hex");
+        socket.join(roomKey);
+        console.log("User " + uid + " has joined room: " + roomKey + ". Room count: " + io.sockets.adapter.rooms[roomKey].length);
+        lobbies[roomKey].users = [uid];
+    });
 
     socket.on("disconnect", (reason) => {
         console.log("User disconnected: " + reason);
         delete users[socket.id];
-    });
-
-
-    socket.on("setHash", () => {
-        var roomKey = crypto.randomBytes(2).toString("hex");
-        socket.join(roomKey);
-        console.log("User " + socket.id + " has joined room: " + roomKey + ". Room count: " + io.sockets.adapter.rooms[roomKey].length);
-        socket.emit("getHash", roomKey);
     });
 
     socket.on("joinRoom", (roomKey) => {
@@ -194,30 +196,20 @@ io.on("connection", (socket) => {
             // Get Playlist
         });
     });
-    socket.on("bp1", function() {
-        console.log("bp1");
-    });
-    socket.on("bp2", function() {
-        console.log("bp2");
-    });
-    socket.on("bp3", function() {
-        console.log("bp3");
-    });
-    socket.on("bp4", function() {
-        console.log("bp4");
-    });
-    socket.on("getPlaylists", function() {
-        console.log("emit getPlaylists: ${socket.id}");
+
+
+    socket.on("getPlaylists", (uid) => {
+        console.log("emit getPlaylists: " + uid);
         console.log(users);
-        socket.emit("gotPlaylists", users[socket.id].getPlaylists());
+        socket.emit("gotPlaylists", users[uid].getPlaylists());
     });
 
 
     app.post("/get_playlists", async function(req, res) {
         console.log("POST /get_playlists");
-        users[socket.id].setAccessToken(req.body.access_token);
+        users[req.body.idfv].setAccessToken(req.body.access_token);
         await get_spotify_user(req.body.access_token, (user) => {
-            users[socket.id].setUserObject(user.data);
+            users[req.body.idfv].setUserObject(user.data);
             axios({
                 method: "get",
                 url: "https://api.spotify.com/v1/users/" + user.data.id + "/playlists",
@@ -226,7 +218,7 @@ io.on("connection", (socket) => {
                 }
             }).then((response) => {
                 console.log(response);
-                users[socket.id].playlists = response.data.items;
+                users[req.body.idfv].setPlaylists(response.data.items);
                 res.sendStatus(200);
                 return response;
             }).catch((error) => {
@@ -242,7 +234,8 @@ io.on("connection", (socket) => {
 app.post("/get-image", (req, res) => {
     console.log("POST /get-image");
     console.log(req);
-    res.download(req.body);
+    console.log(req.body.spotify_url);
+    res.download(req.body.spotify_url);
 });
 
 io.on("setHash", function(socket) {

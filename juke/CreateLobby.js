@@ -21,21 +21,14 @@ import {
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 import Carousel from "react-native-snap-carousel";
-var socket;
+import DeviceInfo from "react-native-device-info";
+
+const socket = io("http://harrys-macbook-pro.local:3000");
+socket.emit("login", DeviceInfo.getUniqueId());
+socket.emit("newLobby", DeviceInfo.getUniqueId());
 
 
 export default class CreateLobby extends Component {
-
-
-
-    setModableVisible(visible) {
-        this.setState({modalVisible: visible});
-    }
-
-    togglePlaylistModal(data) {
-        this.setState({playlistModal: !this.state.playlistModal});
-        this.setState({playlists: data});
-    }
 
     constructor(props) {
         super(props);
@@ -47,8 +40,18 @@ export default class CreateLobby extends Component {
             playlists: [{
                 name: "placeholder",
                 images: [{url: "https://picsum.photos/200"}],
-            }]
+            }],
+            isSocketConnected: false
         };
+    }
+
+    setModableVisible(visible) {
+        this.setState({modalVisible: visible});
+    }
+
+    togglePlaylistModal(data) {
+        this.setState({playlistModal: !this.state.playlistModal});
+        this.setState({playlists: data});
     }
 
     carouselRenderItem({item}) {
@@ -62,7 +65,7 @@ export default class CreateLobby extends Component {
                         headers: {
                             Pragma: "no-cache"
                         },
-                        body: item.images[0].url
+                        body: "spotify_url=" + item.images[0].url
                     }}
                 />
             </View>
@@ -119,20 +122,18 @@ export default class CreateLobby extends Component {
 
                     {this.state.isConnectedToSpotify && <TouchableHighlight
                         onPress = {() => {
-                            socket = io("http://harrys-macbook-pro.local:3000");
                             spotifySDKBridge.getPlaylists((error, results) => {
                                 if (error) {
                                     Alert.alert(error);
                                 } else {
-                                    this.setModableVisible(!this.state.modalVisible);
-                                    socket.emit("getPlaylists");
+                                    socket.emit("getPlaylists", DeviceInfo.getUniqueId());
                                     socket.on("gotPlaylists", (data) => {
                                         this.togglePlaylistModal(data);
                                         Alert.alert(data);
                                     });
+                                    this.setModableVisible(!this.state.modalVisible);
                                 }
                             });
-
                         }}
 
                     >

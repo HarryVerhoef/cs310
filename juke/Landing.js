@@ -21,6 +21,8 @@ import {createStackNavigator, createAppContainer} from "react-navigation";
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
+
+
 export default class Landing extends Component {
 
     constructor(props) {

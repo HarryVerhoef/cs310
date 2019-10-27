@@ -1,7 +1,7 @@
 class User {
 
-    constructor(socket) {
-        this.socket = socket;
+    constructor(uid) {
+        this.uid = uid;
     }
 
     setUserObject(spotify_user_object) {
@@ -13,7 +13,7 @@ class User {
     }
 
     setAccessToken(access_token) {
-        this.acess_token = access_token;
+        this.access_token = access_token;
     }
 
     getAccessToken() {
