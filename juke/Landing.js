@@ -17,7 +17,10 @@ import {
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
+import DeviceInfo from "react-native-device-info";
 
+global.socket = io("http://harrys-macbook-pro.local:3000");
+socket.emit("login", DeviceInfo.getUniqueId());
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
@@ -53,6 +56,7 @@ export default class Landing extends Component {
                 <Button
                     style = {styles.createLobbyButton}
                     onPress = {() => {
+                        socket.emit("newLobby", DeviceInfo.getUniqueId());
                         navigate("CreateLobby", {
                             spotifySDKBridge: spotifySDKBridge
                         });

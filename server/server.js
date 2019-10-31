@@ -9,6 +9,7 @@ var axios = require("axios");
 var queryString = require("querystring");
 var bodyParser = require('body-parser');
 var mongo = require("mongodb").MongoClient;
+var request = require("request");
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -180,6 +181,7 @@ io.on("connection", (socket) => {
         var roomKey = crypto.randomBytes(2).toString("hex");
         socket.join(roomKey);
         console.log("User " + uid + " has joined room: " + roomKey + ". Room count: " + io.sockets.adapter.rooms[roomKey].length);
+        lobbies[roomKey] = {};
         lobbies[roomKey].users = [uid];
     });
 
@@ -235,7 +237,8 @@ app.post("/get-image", (req, res) => {
     console.log("POST /get-image");
     console.log(req);
     console.log(req.body.spotify_url);
-    res.download(req.body.spotify_url);
+    // SHOULD PROBABLY MAKE SURE URL IS SPOTIFY
+    request(req.body.spotify_url).pipe(res);
 });
 
 io.on("setHash", function(socket) {

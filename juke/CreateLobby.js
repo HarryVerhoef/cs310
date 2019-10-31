@@ -23,9 +23,8 @@ import io from 'socket.io-client/dist/socket.io';
 import Carousel from "react-native-snap-carousel";
 import DeviceInfo from "react-native-device-info";
 
-const socket = io("http://harrys-macbook-pro.local:3000");
-socket.emit("login", DeviceInfo.getUniqueId());
-socket.emit("newLobby", DeviceInfo.getUniqueId());
+
+
 
 
 export default class CreateLobby extends Component {
