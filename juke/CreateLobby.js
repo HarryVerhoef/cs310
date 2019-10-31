@@ -16,7 +16,8 @@ import {
     Linking,
     Modal,
     FlatList,
-    Image
+    Image,
+    Dimensions
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
@@ -36,10 +37,7 @@ export default class CreateLobby extends Component {
             modalVisible: true,
             isConnectedToSpotify: false,
             playlistModal: false,
-            playlists: [{
-                name: "placeholder",
-                images: [{url: "https://picsum.photos/200"}],
-            }],
+            playlists: [],
             isSocketConnected: false
         };
     }
@@ -90,72 +88,74 @@ export default class CreateLobby extends Component {
                 </View>
 
                 <View style = {styles.spotifyFrame}>
-                    {!this.state.isConnectedToSpotify && <TouchableHighlight
-                        onPress = {() => {
-                            spotifySDKBridge.instantiateBridge((error, result) => {
-                                if (error) {
-                                    Alert.alert("Error instantiating bridge: " + error);
-                                } else if (result == 1) {
-                                    spotifySDKBridge.auth((error, result) => {
-                                        if (error) {
-                                            Alert.alert("Error authenticating: " + error);
-                                        } else if (result == 1) {
-                                            this.setState({isConnectedToSpotify: true});
-                                        } else if (result == 0) {
-                                            Alert.alert("Result = 0 @ auth");
-                                        }
-                                    });
-                                } else if (result == 0) {
-                                    Alert.alert("Result = 0 @ instantiateBridge");
-                                }
-                            });
+                    <View style = {styles.spotifyFrameChild}>
+                        {!this.state.isConnectedToSpotify && <TouchableHighlight
+                            onPress = {() => {
+                                spotifySDKBridge.instantiateBridge((error, result) => {
+                                    if (error) {
+                                        Alert.alert("Error instantiating bridge: " + error);
+                                    } else if (result == 1) {
+                                        spotifySDKBridge.auth((error, result) => {
+                                            if (error) {
+                                                Alert.alert("Error authenticating: " + error);
+                                            } else if (result == 1) {
+                                                this.setState({isConnectedToSpotify: true});
+                                            } else if (result == 0) {
+                                                Alert.alert("Result = 0 @ auth");
+                                            }
+                                        });
+                                    } else if (result == 0) {
+                                        Alert.alert("Result = 0 @ instantiateBridge");
+                                    }
+                                });
 
 
-                        }}
-                    >
-                        <View style = {styles.spotifyConnectButton}>
-                            <Text style = {styles.spotifyButtonText}>Connect to Spotify</Text>
-                        </View>
-                    </TouchableHighlight>}
+                            }}
+                        >
+                            <View style = {styles.spotifyConnectButton}>
+                                <Text style = {styles.spotifyButtonText}>Connect to Spotify</Text>
+                            </View>
+                        </TouchableHighlight>}
 
 
-                    {this.state.isConnectedToSpotify && <TouchableHighlight
-                        onPress = {() => {
-                            spotifySDKBridge.getPlaylists((error, results) => {
-                                if (error) {
-                                    Alert.alert(error);
-                                } else {
-                                    socket.emit("getPlaylists", DeviceInfo.getUniqueId());
-                                    socket.on("gotPlaylists", (data) => {
-                                        this.togglePlaylistModal(data);
-                                        Alert.alert(data);
-                                    });
-                                    this.setModableVisible(!this.state.modalVisible);
-                                }
-                            });
-                        }}
+                        {this.state.isConnectedToSpotify  && !this.state.playlistModal && <TouchableHighlight
+                            onPress = {() => {
+                                spotifySDKBridge.getPlaylists((error, results) => {
+                                    if (error) {
+                                        Alert.alert(error);
+                                    } else {
+                                        socket.emit("getPlaylists", DeviceInfo.getUniqueId());
+                                        socket.on("gotPlaylists", (data) => {
+                                            this.togglePlaylistModal(data);
+                                            Alert.alert(data);
+                                        });
 
-                    >
-                        <View style = {styles.getPlaylistsButton}>
-                            <Text>Choose Playlist</Text>
-                        </View>
-                    </TouchableHighlight>}
+                                    }
+                                });
+                            }}
 
-
-                    {this.state.playlistModal && <View
-                        style = {styles.setPlaylistCarousel}
-                    >
+                        >
+                            <View style = {styles.getPlaylistsButton}>
+                                <Text>Choose Playlist</Text>
+                            </View>
+                        </TouchableHighlight>}
 
 
-                        <Carousel
-                            ref = {(c) => { this._carousel = c; }}
-                            data = {this.state.playlists}
-                            renderItem = {this.carouselRenderItem}
-                            sliderWidth = {300}
-                            itemWidth = {250}
-                        />
+                        {this.state.playlistModal && <View
+                            style = {styles.setPlaylistCarousel}
+                        >
 
-                    </View>}
+
+                            <Carousel
+                                ref = {(c) => { this._carousel = c; }}
+                                data = {this.state.playlists}
+                                renderItem = {this.carouselRenderItem}
+                                sliderWidth = {Dimensions.get("window").width}
+                                itemWidth = {Dimensions.get("window").width - 100}
+                            />
+
+                        </View>}
+                    </View>
                 </View>
 
                 <View style = {styles.lobbySettings}>
@@ -193,6 +193,9 @@ const styles = StyleSheet.create({
         flex: 2,
         backgroundColor: "#666666",
         justifyContent: "center",
+        alignItems: "stretch"
+    },
+    spotifyFrameChild: {
         alignItems: "center"
     },
     spotifyConnectButton: {
