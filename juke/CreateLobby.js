@@ -51,11 +51,11 @@ export default class CreateLobby extends Component {
         this.setState({playlists: data});
     }
 
-    carouselRenderItem({item}) {
+    carouselRenderItem({item, index}) {
         return (
             <View style={styles.playlistCard}>
                 <Image
-                    style = {{width: 100, height: 100}}
+                    style = {{width: 175, height: 150}}
                     source = {{
                         uri: "http://harrys-macbook-pro.local:3000/get-image",
                         method: "POST",
@@ -65,6 +65,10 @@ export default class CreateLobby extends Component {
                         body: "spotify_url=" + item.images[0].url
                     }}
                 />
+                <View style = {(index % 2 == 0) ? styles.playlistCardInfoEven : styles.playlistCardInfoOdd}>
+                    <Text style = {(index % 2 == 0) ? styles.playlistCardTitleEven : styles.playlistCardTitleOdd}>{item.name}</Text>
+                    <Text style = {(index % 2 == 0) ? styles.playlistCardSongNumberEven : styles.playlistCardSongNumberOdd}>(Number of tracks)</Text>
+                </View>
             </View>
         );
     }
@@ -151,7 +155,10 @@ export default class CreateLobby extends Component {
                                 data = {this.state.playlists}
                                 renderItem = {this.carouselRenderItem}
                                 sliderWidth = {Dimensions.get("window").width}
-                                itemWidth = {Dimensions.get("window").width - 100}
+                                itemWidth = {175}
+                                activeSlideAlignment = "center"
+                                inactiveSlideScale = {0.8}
+                                inactiveSlideOpacity = {0.6}
                             />
 
                         </View>}
@@ -190,7 +197,7 @@ const styles = StyleSheet.create({
     },
 
     spotifyFrame: {
-        flex: 2,
+        flex: 3,
         backgroundColor: "#666666",
         justifyContent: "center",
         alignItems: "stretch"
@@ -215,8 +222,32 @@ const styles = StyleSheet.create({
     },
     playlistCard: {
         backgroundColor: "#cccccc",
-        width: 200,
+        width: 175,
         height: 200
+    },
+    playlistCardInfoEven: {
+        backgroundColor: "#ffffff",
+        height: 25
+    },
+    playlistCardInfoOdd: {
+        backgroundColor: "#151515",
+        height: 25
+    },
+    playlistCardTitleEven: {
+        color: "#151515",
+        textAlign: "center"
+    },
+    playlistCardTitleOdd: {
+        color: "#ffffff",
+        textAlign: "center"
+    },
+    playlistCardSongNumberEven: {
+        color: "#151515",
+        textAlign: "center"
+    },
+    playlistCardSongNumberOdd: {
+        color: "#ffffff",
+        textAlign: "center"
     },
 
     lobbySettings: {
