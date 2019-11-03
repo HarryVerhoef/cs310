@@ -17,7 +17,8 @@ import {
     Modal,
     FlatList,
     Image,
-    Dimensions
+    Dimensions,
+    Picker
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
@@ -38,7 +39,10 @@ export default class CreateLobby extends Component {
             isConnectedToSpotify: false,
             playlistModal: false,
             playlists: [],
-            isSocketConnected: false
+            isSocketConnected: false,
+
+            recommendationSystem: "In-order",
+            lobbyType: "Gym"
         };
     }
 
@@ -168,7 +172,28 @@ export default class CreateLobby extends Component {
                 </View>
 
                 <View style = {styles.lobbySettings}>
-
+                    <Picker
+                        selectedValue = {this.state.recommendationSystem}
+                        style = {styles.recommendationPicker}
+                        onValueChange = {(itemValue, itemIndex) => {
+                            this.setState({recommendationSystem: itemValue});
+                        }}>
+                        <Picker.Item label="In-order" value="In-order"/>
+                        <Picker.Item label="Shuffle" value="Shuffle"/>
+                        <Picker.Item label="Neural Network" value="Neural"/>
+                    </Picker>
+                    <Picker
+                        selectedValue = {this.state.lobbyType}
+                        style = {styles.lobbyTypePicker}
+                        onValueChange = {(itemValue, itemIndex) => {
+                            this.setState({lobbyType: itemValue});
+                        }}>
+                        <Picker.Item label="Gym" value="Gym"/>
+                        <Picker.Item label="Party" value="Party"/>
+                        <Picker.Item label="Bar" value="Bar"/>
+                        <Picker.Item label="Car" value="Car"/>
+                        <Picker.Item label="Other" value="Other"/>
+                    </Picker>
                 </View>
 
                 <View style = {styles.createLobby}>
@@ -236,11 +261,15 @@ const styles = StyleSheet.create({
     },
     playlistCardInfoEven: {
         backgroundColor: "#ffffff",
-        height: 50
+        height: 50,
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 25
     },
     playlistCardInfoOdd: {
         backgroundColor: "#151515",
-        height: 50
+        height: 50,
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 25
     },
     playlistCardTitleEven: {
         color: "#151515",
@@ -268,8 +297,16 @@ const styles = StyleSheet.create({
     lobbySettings: {
         flex: 2,
         backgroundColor: "#999999",
-        justifyContent: "center",
-        alignItems: "center"
+        flexWrap: "wrap"
+    },
+    lobbySettingsText: {
+        flex: 1
+    },
+    recommendationPicker: {
+        flex: 4
+    },
+    lobbyTypePicker: {
+        flex: 4
     },
 
     createLobby: {
