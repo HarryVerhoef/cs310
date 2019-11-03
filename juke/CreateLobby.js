@@ -67,7 +67,7 @@ export default class CreateLobby extends Component {
                 />
                 <View style = {(index % 2 == 0) ? styles.playlistCardInfoEven : styles.playlistCardInfoOdd}>
                     <Text style = {(index % 2 == 0) ? styles.playlistCardTitleEven : styles.playlistCardTitleOdd}>{item.name}</Text>
-                    <Text style = {(index % 2 == 0) ? styles.playlistCardSongNumberEven : styles.playlistCardSongNumberOdd}>(Number of tracks)</Text>
+                    <Text style = {(index % 2 == 0) ? styles.playlistCardSongNumberEven : styles.playlistCardSongNumberOdd}>{item.tracks.total} Songs</Text>
                 </View>
             </View>
         );
@@ -156,9 +156,11 @@ export default class CreateLobby extends Component {
                                 renderItem = {this.carouselRenderItem}
                                 sliderWidth = {Dimensions.get("window").width}
                                 itemWidth = {175}
+
                                 activeSlideAlignment = "center"
                                 inactiveSlideScale = {0.8}
                                 inactiveSlideOpacity = {0.6}
+                                slideStyle = {styles.slideStyle}
                             />
 
                         </View>}
@@ -203,7 +205,9 @@ const styles = StyleSheet.create({
         alignItems: "stretch"
     },
     spotifyFrameChild: {
-        alignItems: "center"
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center"
     },
     spotifyConnectButton: {
         width: 100,
@@ -213,7 +217,8 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     setPlaylistCarousel: {
-        //
+        flex: 1,
+        justifyContent: "center"
     },
     getPlaylistsButton: {
         width: 100,
@@ -223,15 +228,19 @@ const styles = StyleSheet.create({
     playlistCard: {
         backgroundColor: "#cccccc",
         width: 175,
-        height: 200
+        height: 200,
+        shadowColor: "#000000",
+        shadowOpacity: 0.8,
+        shadowRadius: 5,
+        borderRadius: 25
     },
     playlistCardInfoEven: {
         backgroundColor: "#ffffff",
-        height: 25
+        height: 50
     },
     playlistCardInfoOdd: {
         backgroundColor: "#151515",
-        height: 25
+        height: 50
     },
     playlistCardTitleEven: {
         color: "#151515",
@@ -248,6 +257,12 @@ const styles = StyleSheet.create({
     playlistCardSongNumberOdd: {
         color: "#ffffff",
         textAlign: "center"
+    },
+    cardContainer: {
+        justifyContent: "center"
+    },
+    slideStyle: {
+        justifyContent: "center"
     },
 
     lobbySettings: {
