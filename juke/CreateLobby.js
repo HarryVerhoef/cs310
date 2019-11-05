@@ -18,7 +18,7 @@ import {
     FlatList,
     Image,
     Dimensions,
-    Picker
+    Switch
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
@@ -41,8 +41,15 @@ export default class CreateLobby extends Component {
             playlists: [],
             isSocketConnected: false,
 
-            recommendationSystem: "In-order",
-            lobbyType: "Gym"
+
+            activePlaylist: {
+                name: "No playlist selected",
+                tracks: {total: 0}
+            },
+
+            chatRoom: true,
+            lyrics: true,
+            volumeControl: true
         };
     }
 
@@ -53,13 +60,15 @@ export default class CreateLobby extends Component {
     togglePlaylistModal(data) {
         this.setState({playlistModal: !this.state.playlistModal});
         this.setState({playlists: data});
+        this.setState({activePlaylist: data[0]});
     }
 
     carouselRenderItem({item, index}) {
         return (
             <View style={styles.playlistCard}>
                 <Image
-                    style = {{width: 175, height: 150}}
+
+                    style = {styles.playlistImage}
                     source = {{
                         uri: "http://harrys-macbook-pro.local:3000/get-image",
                         method: "POST",
@@ -69,10 +78,6 @@ export default class CreateLobby extends Component {
                         body: "spotify_url=" + item.images[0].url
                     }}
                 />
-                <View style = {(index % 2 == 0) ? styles.playlistCardInfoEven : styles.playlistCardInfoOdd}>
-                    <Text style = {(index % 2 == 0) ? styles.playlistCardTitleEven : styles.playlistCardTitleOdd}>{item.name}</Text>
-                    <Text style = {(index % 2 == 0) ? styles.playlistCardSongNumberEven : styles.playlistCardSongNumberOdd}>{item.tracks.total} Songs</Text>
-                </View>
             </View>
         );
     }
@@ -89,7 +94,7 @@ export default class CreateLobby extends Component {
                         onChangeText = {(text) => {this.setState({lobbyName: text})}}
                         value = {this.state.lobbyName}
                         placeholder = "Lobby Name"
-                        editable = {this.state.playlistModal}
+                        placeholderTextColor = "#ffffff"
                         maxLength = {40}
                         >
                     </TextInput>
@@ -135,7 +140,6 @@ export default class CreateLobby extends Component {
                                         socket.emit("getPlaylists", DeviceInfo.getUniqueId());
                                         socket.on("gotPlaylists", (data) => {
                                             this.togglePlaylistModal(data);
-                                            Alert.alert(data);
                                         });
 
                                     }
@@ -159,12 +163,15 @@ export default class CreateLobby extends Component {
                                 data = {this.state.playlists}
                                 renderItem = {this.carouselRenderItem}
                                 sliderWidth = {Dimensions.get("window").width}
-                                itemWidth = {175}
+                                itemWidth = {200}
 
                                 activeSlideAlignment = "center"
                                 inactiveSlideScale = {0.8}
                                 inactiveSlideOpacity = {0.6}
                                 slideStyle = {styles.slideStyle}
+                                onSnapToItem = {(slideIndex) => {
+                                    this.setState({activePlaylist: this.state.playlists[slideIndex]});
+                                }}
                             />
 
                         </View>}
@@ -172,31 +179,63 @@ export default class CreateLobby extends Component {
                 </View>
 
                 <View style = {styles.lobbySettings}>
-                    <Picker
-                        selectedValue = {this.state.recommendationSystem}
-                        style = {styles.recommendationPicker}
-                        onValueChange = {(itemValue, itemIndex) => {
-                            this.setState({recommendationSystem: itemValue});
-                        }}>
-                        <Picker.Item label="In-order" value="In-order"/>
-                        <Picker.Item label="Shuffle" value="Shuffle"/>
-                        <Picker.Item label="Neural Network" value="Neural"/>
-                    </Picker>
-                    <Picker
-                        selectedValue = {this.state.lobbyType}
-                        style = {styles.lobbyTypePicker}
-                        onValueChange = {(itemValue, itemIndex) => {
-                            this.setState({lobbyType: itemValue});
-                        }}>
-                        <Picker.Item label="Gym" value="Gym"/>
-                        <Picker.Item label="Party" value="Party"/>
-                        <Picker.Item label="Bar" value="Bar"/>
-                        <Picker.Item label="Car" value="Car"/>
-                        <Picker.Item label="Other" value="Other"/>
-                    </Picker>
+
+                    <View style = {styles.playlistInfo}>
+                        <Text style = {styles.playlistInfoText}>{this.state.activePlaylist.name}</Text>
+                        <Text style = {styles.playlistInfoText}>{this.state.activePlaylist.tracks.total} Songs</Text>
+                    </View>
+
+                    <View style = {styles.lobbySettingsWrapper}>
+
+                        <View style = {styles.lobbySwitchView}>
+                            <Switch
+                                value = {this.state.chatRoom}
+                                onValueChange = {(value) => {
+                                    this.setState({chatRoom: value});
+                                }}
+                                 style = {{marginLeft: 20}}
+                            />
+                            <Text style = {{marginLeft: 10}}>Chat Room</Text>
+                        </View>
+
+                        <View style = {styles.lobbySwitchView}>
+                            <Switch
+                                value = {this.state.lyrics}
+                                onValueChange = {(value) => {
+                                    this.setState({lyrics: value});
+                                }}
+                                 style = {{marginLeft: 20}}
+                            />
+                            <Text style = {{marginLeft: 10}}>Lyrics</Text>
+                        </View>
+
+                        <View style = {styles.lobbySwitchView}>
+                            <Switch
+                                value = {this.state.volumeControl}
+                                onValueChange = {(value) => {
+                                    this.setState({volumeControl: value});
+                                }}
+                                 style = {{marginLeft: 20}}
+                            />
+                            <Text style = {{marginLeft: 10}}>Volume Control</Text>
+                        </View>
+
+                    </View>
+
                 </View>
 
                 <View style = {styles.createLobby}>
+                    <TouchableHighlight
+                        onPress = {() => {
+                            //
+                        }}
+                        style = {{height: "75%"}}
+                    >
+                        <View style = {styles.createLobbyButton}>
+                            <Text style = {{color: "#ffffff"}}>Create Lobby</Text>
+                        </View>
+
+                    </TouchableHighlight>
                 </View>
             </View>
         );
@@ -217,10 +256,14 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     lobbyNameInput: {
-        width: 300,
-        height: 50,
-        backgroundColor: "#8d8",
-
+        width: 200,
+        height: "75%",
+        backgroundColor: "#333333",
+        textAlign: "center",
+        color: "#ffffff",
+        borderColor: "#cc2233",
+        borderRadius: 10,
+        borderWidth: 1,
     },
 
     spotifyFrame: {
@@ -252,40 +295,11 @@ const styles = StyleSheet.create({
     },
     playlistCard: {
         backgroundColor: "#cccccc",
-        width: 175,
+        width: 200,
         height: 200,
         shadowColor: "#000000",
         shadowOpacity: 0.8,
-        shadowRadius: 5,
-        borderRadius: 25
-    },
-    playlistCardInfoEven: {
-        backgroundColor: "#ffffff",
-        height: 50,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25
-    },
-    playlistCardInfoOdd: {
-        backgroundColor: "#151515",
-        height: 50,
-        borderBottomLeftRadius: 25,
-        borderBottomRightRadius: 25
-    },
-    playlistCardTitleEven: {
-        color: "#151515",
-        textAlign: "center"
-    },
-    playlistCardTitleOdd: {
-        color: "#ffffff",
-        textAlign: "center"
-    },
-    playlistCardSongNumberEven: {
-        color: "#151515",
-        textAlign: "center"
-    },
-    playlistCardSongNumberOdd: {
-        color: "#ffffff",
-        textAlign: "center"
+        shadowRadius: 5
     },
     cardContainer: {
         justifyContent: "center"
@@ -293,21 +307,42 @@ const styles = StyleSheet.create({
     slideStyle: {
         justifyContent: "center"
     },
+    playlistImage: {
+        width: 200,
+        height: 200
+    },
 
     lobbySettings: {
         flex: 2,
         backgroundColor: "#999999",
-        flexWrap: "wrap"
+        alignItems: "center"
     },
-    lobbySettingsText: {
-        flex: 1
+    playlistInfo: {
+        flex: 1,
+        width: 150,
+        backgroundColor: "#666666",
+        justifyContent: "space-around",
+        alignItems: "stretch",
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10
     },
-    recommendationPicker: {
-        flex: 4
+    playlistInfoText: {
+        textAlign: "center",
+        color: "#ffffff"
     },
-    lobbyTypePicker: {
-        flex: 4
+    lobbySettingsWrapper: {
+        flex: 3,
+        width: "100%",
+        alignItems: "stretch"
     },
+    lobbySwitchView: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "flex-start",
+        flexDirection: "row"
+    },
+
+
 
     createLobby: {
         flex: 1,
@@ -315,6 +350,16 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center"
     },
+    createLobbyButton: {
+        width: 200,
+        height: "100%",
+        backgroundColor: "#cc2233",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center",
+        alignSelf: "center"
+    }
+
 
 
 });
