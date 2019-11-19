@@ -2,9 +2,10 @@ class User {
 
     constructor(uid) {
         this.uid = uid;
+        this.vote_weight = 1;
     }
 
-    
+
     setUserObject(spotify_user_object) {
         this.spotify_user_object = spotify_user_object;
     }
@@ -15,6 +16,10 @@ class User {
 
     setAccessToken(access_token) {
         this.access_token = access_token;
+    }
+
+    getVote() {
+        return this.vote_weight;
     }
 
     getAccessToken() {

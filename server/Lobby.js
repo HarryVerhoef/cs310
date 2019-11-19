@@ -3,6 +3,7 @@ class Lobby {
     constructor(key, uid) {
         this.key = key;
         this.user_list = [];
+        this.votes = {};
         this.addUser(uid);
     }
 
@@ -12,6 +13,14 @@ class Lobby {
         this.chat = chat;
         this.lyrics = lyrics;
         this.volume = volume;
+    }
+
+    vote(song, user) {
+        if (this.votes[song]) {
+            this.votes.song = this.votes.song + user.getVote();
+        } else {
+            this.votes.song = user.getVote();
+        }
     }
 
     addUser(uid) {
@@ -37,5 +46,6 @@ class Lobby {
     isVolumeEnabled() {
         return this.volume;
     }
-
 }
+
+module.exports.Lobby = Lobby;
