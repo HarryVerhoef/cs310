@@ -188,16 +188,20 @@ io.on("connection", (socket) => {
     socket.on("disconnect", (reason) => {
         console.log("User disconnected: " + reason);
         delete users[socket.id];
+        // Should probably implement a feature to remove users from the lobby they're in.
     });
 
-    socket.on("joinRoom", (roomKey) => {
+    /*  Add users to lobby
+    **  @param uid: The unique client device id.
+    **  @param roomKey: The unique lobby id.
+    */
+    socket.on("joinRoom", (uid, roomKey) => {
         socket.join(roomKey);
         console.log("User " + socket.id + " has joined room: " + roomKey + ". Room count: " + io.sockets.adapter.rooms[roomKey].length);
-
-        socket.on("uploadPlaylist", async () => {
-            // Get Playlist
-        });
+        lobbies[roomKey].users.push(uid);
     });
+
+
 
 
     socket.on("getPlaylists", (uid) => {
@@ -230,7 +234,6 @@ io.on("connection", (socket) => {
             });
         });
     });
-
 });
 
 app.post("/get-image", (req, res) => {

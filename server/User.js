@@ -4,6 +4,7 @@ class User {
         this.uid = uid;
     }
 
+    
     setUserObject(spotify_user_object) {
         this.spotify_user_object = spotify_user_object;
     }
@@ -26,6 +27,10 @@ class User {
 
     getPlaylists() {
         return this.playlists;
+    }
+
+    get_uid() {
+        return this.uid;
     }
 }
 
