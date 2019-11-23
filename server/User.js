@@ -5,9 +5,16 @@ class User {
         this.vote_weight = 1;
     }
 
+    set_lobby(lobby_key) {
+        this.lobby = key;
+    }
 
     setUserObject(spotify_user_object) {
         this.spotify_user_object = spotify_user_object;
+    }
+
+    get_id() {
+        return this.getUserObject().id;
     }
 
     getUserObject() {
@@ -20,6 +27,10 @@ class User {
 
     getVote() {
         return this.vote_weight;
+    }
+
+    get_lobby() {
+        return this.lobby;
     }
 
     getAccessToken() {

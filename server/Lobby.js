@@ -17,14 +17,35 @@ class Lobby {
 
     vote(song, user) {
         if (this.votes[song]) {
-            this.votes.song = this.votes.song + user.getVote();
+            this.votes[song] = this.votes.song + user.getVote();
         } else {
-            this.votes.song = user.getVote();
+            this.votes[song] = user.getVote();
         }
     }
 
-    addUser(uid) {
+    getNextSong() {
+        var max = 0;
+        var maxSong = "";
+        for (var song in this.votes) {
+            // skip loop if the property is from prototype
+            if (!this.votes.hasOwnProperty(song)) continue;
+
+            var songVotes = this.votes[song];
+
+            if (songVotes > max) {
+                max = songVotes;
+                maxSong = song;
+            }
+        }
+        return maxSong;
+    }
+
+    add_user(uid) {
         this.user_list.push(uid);
+    }
+
+    get_users() {
+        return this.user_list;
     }
 
     getName() {
