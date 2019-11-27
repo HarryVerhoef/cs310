@@ -4,7 +4,7 @@ class Lobby {
         this.key = key;
         this.user_list = [];
         this.votes = {};
-        this.addUser(uid);
+        this.add_user(uid);
     }
 
     set_settings(name, playlist_uri, chat, lyrics, volume) {

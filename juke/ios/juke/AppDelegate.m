@@ -335,7 +335,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
       }
       dispatch_semaphore_signal(skipSema);
     }];
-    
     // dispatch_time takes a dispatch_time and a delta (measured in nanoseconds)
     dispatch_semaphore_wait(skipSema, dispatch_time(DISPATCH_TIME_NOW,400000000));
     

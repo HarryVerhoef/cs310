@@ -6,7 +6,7 @@ class User {
     }
 
     set_lobby(lobby_key) {
-        this.lobby = key;
+        this.lobby = lobby_key;
     }
 
     setUserObject(spotify_user_object) {
