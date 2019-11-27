@@ -20,7 +20,8 @@ import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import { YellowBox } from 'react-native';
 import Landing from "juke/Landing.js";
-import CreateLobby from "juke/CreateLobby.js"
+import CreateLobby from "juke/CreateLobby.js";
+import HostLobby from "juke/HostLobby.js";
 
 YellowBox.ignoreWarnings([
   'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
@@ -32,6 +33,9 @@ const App = createStackNavigator({
     },
     CreateLobby: {
         screen: CreateLobby
+    },
+    HostLobby: {
+        screen: HostLobby
     }
 });
 
