@@ -227,7 +227,7 @@ export default class CreateLobby extends Component {
                 <View style = {styles.createLobby}>
                     <TouchableHighlight
                         onPress = {() => {
-                            //
+                            navigate("HostLobby");
                         }}
                         style = {{height: "75%"}}
                     >

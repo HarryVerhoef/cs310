@@ -19,18 +19,31 @@ import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
 
-global.socket = io("http://harrys-macbook-pro.local:3000");
-socket.emit("login", DeviceInfo.getUniqueId());
-
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 
 
-export default class Landing extends Component {
+export default class HostLobby extends Component {
+
+    getRecommendations() {
+        var recs = fetch("http://harrys-macbook-pro.local:3000/get_recommendations", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                uid: DeviceInfo.getUniqueId()
+            })
+        });
+    }
 
     constructor(props) {
         super(props);
+        this.getRecommendations();
     }
+
+
 
     render() {
         const {navigate} = this.props.navigation;
@@ -42,7 +55,7 @@ export default class Landing extends Component {
                 </View>
 
                 <View style = {styles.TrackImageView}>
-                    //
+
                 </View>
 
                 <View style = {styles.SongInfo}>
@@ -50,7 +63,7 @@ export default class Landing extends Component {
                 </View>
 
                 <View style = {styles.Recommendations}>
-                    //
+
                 </View>
 
             </View>
@@ -68,7 +81,7 @@ const styles = StyleSheet.create({
     HostLobbyHeader: {
         flex: 1,
         backgroundColor: "#333333",
-        //
+
     },
 
     TrackImageView: {

@@ -225,7 +225,6 @@ io.on("connection", (socket) => {
                     "Authorization": "Bearer " + req.body.access_token
                 }
             }).then((response) => {
-                console.log(response);
                 users[req.body.idfv].setPlaylists(response.data.items);
                 res.sendStatus(200);
                 return response;
@@ -240,33 +239,15 @@ io.on("connection", (socket) => {
     // method to get recommended songs from user playlist
     // WebSocket vs RESTful
     // uid is host uid (convenient for access_token)
-    socket.on("getRecommendations", (uid, lobby_key) => {
+    app.post("/get_recommendations", async function(req, res) {
+        console.log("POST /get_recommendations");
         // For now, get 5 random songs from playlist.
-        var user = users[uid];
+        var user = users[req.body.uid];
         var access_token = user.getAccessToken();
-        // await get_spotify_user(acess_token, (user) => {
-        //     users[req.body.idfv].setUserObject(user.data);
-        //     axios({
-        //         method: "get",
-        //         url: "https://api.spotify.com/v1/users/" + user.data.id + "/playlists",
-        //         headers: {
-        //             "Authorization": "Bearer " + req.body.access_token
-        //         }
-        //     }).then((response) => {
-        //         console.log(response);
-        //         users[req.body.idfv].setPlaylists(response.data.items);
-        //         res.sendStatus(200);
-        //         return response;
-        //     }).catch((error) => {
-        //         console.log(error);
-        //         res.sendStatus(200);
-        //         return error;
-        //     });
-        // });
 
         var seed_artists = [
             "7EQ0qTo7fWT7DPxmxtSYEc",
-            "6LuN9FCkKOj5PcnpouEgny"
+            "2IDLDx25HU1nQMKde4n61a"
         ];
 
         var seed_genres = [
@@ -274,9 +255,7 @@ io.on("connection", (socket) => {
         ];
 
         var seed_tracks = [
-            "0cRvK1mcG6zmaD04D6PAnb",
-            "GYpYY6jm48GArqKDnuwG",
-            "6Tvzf3VEi16JMhAgOwdt2y"
+            "0cRvK1mcG6zmaD04D6PAnb"
         ];
 
         var body = {
@@ -284,48 +263,16 @@ io.on("connection", (socket) => {
             seed_artists: seed_artists,
             seed_genres: seed_genres,
             seed_tracks: seed_tracks
-        }
+        };
 
-        var seeds = "";
-
-
-
-
-
-
-        // var seed_a_string = seed_artists.join(",");
-        // var seed_g_string = seed_genres.join(",");
-        // var seed_t_string = seed_tracks.join(",");
-
-
-
-
-
-        body["max_instrumentalness"] = 0.5;
-        body["max_energy"] = 0.9;
-        body["min_energy"] = 0.2;
-
-
-
-        // body["seed_artists"] = ;
-        // body["seed_genres"] = ;
-        // body["seed_tracks"] = ;
-
-
-
-        body["target_instrumentalness"] = 0.2;
-        body["target_energy"] = 0.8;
-
-
-
+        console.log(queryString.stringify(body));
 
         axios({
             method: "get",
-            url: "https://api.spotify.com/v1/recommendations",
+            url: "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body),
             headers: {
                 "Authorization": "Bearer " + access_token
-            },
-            data: body
+            }
         }).then((response) => {
             console.log(response);
         }).catch((error) => {
