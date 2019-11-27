@@ -25,7 +25,8 @@ var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 export default class HostLobby extends Component {
 
-    getRecommendations() {
+
+    getRecommendations(callback) {
         var recs = fetch("http://harrys-macbook-pro.local:3000/get_recommendations", {
             method: "POST",
             headers: {
@@ -35,12 +36,27 @@ export default class HostLobby extends Component {
             body: JSON.stringify({
                 uid: DeviceInfo.getUniqueId()
             })
+        })
+        .then((response) => {
+            return response;
+        })
+        .catch((error) => {
+            Alert.alert("Error getting recommended tracks: " + error);
         });
     }
 
     constructor(props) {
         super(props);
-        this.getRecommendations();
+        this.state = {
+            recommendations: []
+        }
+        this.getRecommendations(() => {
+            Alert.alert(this.state.recommendations);
+        });
+        var tracks = this.getRecommendations();
+        Alert.alert(tracks);
+        this.setState({recommendations: tracks});
+        Alert.alert(this.state.recommendations);
     }
 
 

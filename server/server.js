@@ -244,6 +244,7 @@ io.on("connection", (socket) => {
         // For now, get 5 random songs from playlist.
         var user = users[req.body.uid];
         var access_token = user.getAccessToken();
+        var tracks;
 
         var seed_artists = [
             "7EQ0qTo7fWT7DPxmxtSYEc",
@@ -267,6 +268,8 @@ io.on("connection", (socket) => {
 
         console.log(queryString.stringify(body));
 
+
+
         axios({
             method: "get",
             url: "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body),
@@ -275,8 +278,12 @@ io.on("connection", (socket) => {
             }
         }).then((response) => {
             console.log(response);
+            tracks = response.data.tracks;
+            res.send(response.data.tracks.slice(0, 6));
+            return response.data.tracks.slice(0, 6);
         }).catch((error) => {
             console.log(error);
+            return error;
         });
     });
 
