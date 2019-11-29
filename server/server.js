@@ -236,6 +236,31 @@ io.on("connection", (socket) => {
         });
     });
 
+    app.post("/make_lobby", async function(req, res) {
+        console.log("POST /make_lobby");
+        console.log(req.body);
+        lobby = lobbies[users[req.body.uid].get_lobby()];
+        lobby.set_settings(
+            req.body.name,
+            req.body.playlist,
+            req.body.chat,
+            req.body.volume
+        );
+        res.sendStatus(200);
+        return 1;
+    });
+
+    socket.on("getLobbyInfo", (uid) => {
+        lobby = lobbies[users[uid].get_lobby()];
+        console.log("socket.getLobbyInfo");
+        console.log(lobby.getName());
+        console.log(lobby.getKey());
+        socket.emit("lobbyInfo", {
+            name: lobby.getName(),
+            key: lobby.getKey()
+        });
+    });
+
     // method to get recommended songs from user playlist
     // WebSocket vs RESTful
     // uid is host uid (convenient for access_token)
@@ -277,10 +302,9 @@ io.on("connection", (socket) => {
                 "Authorization": "Bearer " + access_token
             }
         }).then((response) => {
-            console.log(response);
-            tracks = response.data.tracks;
-            res.send(response.data.tracks.slice(0, 6));
-            return response.data.tracks.slice(0, 6);
+            tracks = response.data.tracks.slice(0, 6);
+            res.send(tracks);
+            return tracks;
         }).catch((error) => {
             console.log(error);
             return error;
@@ -291,8 +315,6 @@ io.on("connection", (socket) => {
 
 app.post("/get-image", (req, res) => {
     console.log("POST /get-image");
-    console.log(req);
-    console.log(req.body.spotify_url);
     // SHOULD PROBABLY MAKE SURE URL IS SPOTIFY
     request(req.body.spotify_url).pipe(res);
 });

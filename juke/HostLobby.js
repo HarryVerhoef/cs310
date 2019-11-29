@@ -26,48 +26,52 @@ var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 export default class HostLobby extends Component {
 
 
-    getRecommendations(callback) {
-        var recs = fetch("http://harrys-macbook-pro.local:3000/get_recommendations", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                uid: DeviceInfo.getUniqueId()
-            })
-        })
-        .then((response) => {
+    async getRecommendations() {
+        try {
+            let recs = await fetch("http://harrys-macbook-pro.local:3000/get_recommendations", {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    uid: DeviceInfo.getUniqueId()
+                })
+            });
+            let response = await recs;
             return response;
-        })
-        .catch((error) => {
-            Alert.alert("Error getting recommended tracks: " + error);
-        });
+        } catch(error) {
+            Alert.alert("Error retrieving recommendations" + error);
+        }
     }
 
     constructor(props) {
         super(props);
         this.state = {
-            recommendations: []
+            recommendations: [],
+            lobby: {}
         }
-        this.getRecommendations(() => {
-            Alert.alert(this.state.recommendations);
-        });
-        var tracks = this.getRecommendations();
-        Alert.alert(tracks);
+    }
+
+    async componentDidMount() {
+        const tracks = await this.getRecommendations();
         this.setState({recommendations: tracks});
-        Alert.alert(this.state.recommendations);
     }
 
 
 
     render() {
         const {navigate} = this.props.navigation;
+        const uid = DeviceInfo.getUniqueId();
+
+
+        socket.emit("getLobbyInfo", uid);
+        socket.on("lobbyInfo", (data) => {this.setState({lobby: data})});
         return (
             <View style={styles.HostLobbyBody}>
 
                 <View style= {styles.HostLobbyHeader}>
-                    <Text>Lobby Name: Lobby Key</Text>
+                    <Text>{this.state.lobby.name}: {this.state.lobby.key}</Text>
                 </View>
 
                 <View style = {styles.TrackImageView}>
