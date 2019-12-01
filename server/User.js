@@ -33,7 +33,7 @@ class User {
         return this.lobby;
     }
 
-    getAccessToken() {
+    get_access_token() {
         return this.access_token;
     }
 

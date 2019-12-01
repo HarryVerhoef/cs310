@@ -240,9 +240,10 @@ io.on("connection", (socket) => {
         console.log("POST /make_lobby");
         console.log(req.body);
         lobby = lobbies[users[req.body.uid].get_lobby()];
+        let playlist = await get_playlist_from_id(req.body.uid, req.body.playlist);
         lobby.set_settings(
             req.body.name,
-            req.body.playlist,
+            await playlist,
             req.body.chat,
             req.body.volume
         );
@@ -250,14 +251,29 @@ io.on("connection", (socket) => {
         return 1;
     });
 
+    socket.on("vote", async (vote) => {
+        var lobby = get_lobby_from_uid(vote.uid);
+        lobby.vote(vote.tid, users[vote.uid]);
+        // emit to room that a vote has been cast.
+
+        // for now, set track to that which is voted for.
+        const track = await get_track_from_id(vote.uid, vote.tid);
+        lobby.set_track(await track);
+    });
+
     socket.on("getLobbyInfo", (uid) => {
         lobby = lobbies[users[uid].get_lobby()];
-        console.log("socket.getLobbyInfo");
-        console.log(lobby.getName());
-        console.log(lobby.getKey());
+        // console.log("socket.getLobbyInfo");
+        // console.log(lobby.getName());
+        // console.log(lobby.getKey());
         socket.emit("lobbyInfo", {
             name: lobby.getName(),
-            key: lobby.getKey()
+            key: lobby.getKey(),
+            song: {
+                name: lobby.get_track_name(),
+                id: lobby.get_track_id(),
+                image_url: lobby.get_track_image_url(),
+            }
         });
     });
 
@@ -267,9 +283,9 @@ io.on("connection", (socket) => {
     app.post("/get_recommendations", async function(req, res) {
         console.log("POST /get_recommendations");
         // For now, get 5 random songs from playlist.
-        var user = users[req.body.uid];
-        var access_token = user.getAccessToken();
-        var tracks;
+        var access_token = get_access_token_from_uid(req.body.uid);
+
+        console.log("access_token: " + access_token);
 
         var seed_artists = [
             "7EQ0qTo7fWT7DPxmxtSYEc",
@@ -291,24 +307,29 @@ io.on("connection", (socket) => {
             seed_tracks: seed_tracks
         };
 
+        const url = "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body);
+
         console.log(queryString.stringify(body));
 
 
-
-        axios({
-            method: "get",
-            url: "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body),
-            headers: {
-                "Authorization": "Bearer " + access_token
-            }
-        }).then((response) => {
-            tracks = response.data.tracks.slice(0, 6);
-            res.send(tracks);
-            return tracks;
-        }).catch((error) => {
+        try {
+            let res2 = await axios({
+                method: "GET",
+                url: "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body),
+                headers: {
+                    "Authorization": "Bearer " + access_token
+                }
+            });
+            let res3 = await res2.data.tracks.slice(0, 6);
+            console.log(res3);
+            res.send(res3);
+            return res3;
+        } catch (error) {
             console.log(error);
+            res.send(error);
             return error;
-        });
+        }
+
     });
 
 });
@@ -318,6 +339,59 @@ app.post("/get-image", (req, res) => {
     // SHOULD PROBABLY MAKE SURE URL IS SPOTIFY
     request(req.body.spotify_url).pipe(res);
 });
+
+app.post("/set-track", (req, res) => {
+
+});
+
+async function get_playlist_from_id(uid, pid) {
+    console.log("get_playlist_from_id(" + uid + ", " + pid + ");");
+
+    const access_token = get_access_token_from_uid(uid);
+
+    await axios({
+        method: "get",
+        url: "https://api.spotify.com/v1/playlists/" + pid,
+        headers: {
+            "Authorization": "Bearer " + access_token
+        }
+    }).then((response) => {
+        console.log(response);
+        return response;
+    }).catch((error) => {
+        console.log(error);
+        return null;
+    });
+}
+
+async function get_track_from_id(uid, tid) {
+    console.log("get_playlist_from_id(" + uid + ", " + pid + ");");
+
+    const access_token = get_access_token_from_uid(uid);
+
+    await axios({
+        method: "get",
+        url: "https://api.spotify.com/v1/tracks/" + tid,
+        headers: {
+            "Authorization": "Bearer " + access_token
+        }
+    }).then((response) => {
+        console.log(response);
+        return response;
+    }).catch((error) => {
+        console.log(error);
+        return null;
+    });
+}
+
+function get_access_token_from_uid(uid) {
+    console.log("get_access_token_from_uid(" + uid + ")");
+    return users[uid].get_access_token();
+}
+
+function get_lobby_from_uid(uid) {
+    return lobbies[users[uid].get_lobby()];
+}
 
 io.on("setHash", function(socket) {
     console.log("setHash recevied");

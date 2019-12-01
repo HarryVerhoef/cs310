@@ -10,9 +10,12 @@ import {
     Button,
     Alert,
     TouchableHighlight,
+    TouchableOpacity,
     Touchable,
     NativeModules,
-    Platform
+    Platform,
+    Image,
+    FlatList
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
@@ -21,15 +24,34 @@ import DeviceInfo from "react-native-device-info";
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
+function Recommendation({id, title, selected, artists, onSelect}) {
+    return (
+        <TouchableOpacity
+            onPress = {() => onSelect(id)}
+            style = {[
+                styles.recommendation,
+                {backgroundColor: selected ? "#6e3b6e" : "#f9c2ff"}
+            ]}
+        >
+            <Text style = {styles.recommendationTitle}>title</Text>
+            <Text style = {styles.recommendationArtists}>{artists.join()}</Text>
 
+        </TouchableOpacity>
+    );
+}
 
 export default class HostLobby extends Component {
 
 
     async getRecommendations() {
+
+
+        const url = "http://harrys-macbook-pro.local:3000/get_recommendations";
+
         try {
-            let recs = await fetch("http://harrys-macbook-pro.local:3000/get_recommendations", {
-                method: "POST",
+            Alert.alert("getRecommendations");
+            let response = await fetch(url, {
+                method: "post",
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json"
@@ -38,10 +60,12 @@ export default class HostLobby extends Component {
                     uid: DeviceInfo.getUniqueId()
                 })
             });
-            let response = await recs;
-            return response;
-        } catch(error) {
-            Alert.alert("Error retrieving recommendations" + error);
+            let res = await response.json();
+            Alert.alert(res);
+            return res;
+        } catch (error) {
+            Alert.alert("error at getRecommendations: " + error);
+            return error;
         }
     }
 
@@ -49,13 +73,17 @@ export default class HostLobby extends Component {
         super(props);
         this.state = {
             recommendations: [],
-            lobby: {}
+            lobby: {},
+            selected: {}
         }
     }
 
-    async componentDidMount() {
-        const tracks = await this.getRecommendations();
-        this.setState({recommendations: tracks});
+    componentDidMount() {
+
+        this.getRecommendations().then((response) => {
+            this.setState({recommendations: response});
+        });
+
     }
 
 
@@ -66,7 +94,21 @@ export default class HostLobby extends Component {
 
 
         socket.emit("getLobbyInfo", uid);
-        socket.on("lobbyInfo", (data) => {this.setState({lobby: data})});
+        socket.on("lobbyInfo", (data) => {
+            this.setState({lobby: data});
+            // Alert.alert(data);
+            // Alert.alert(this.state.tracks);
+        });
+
+        onSelect = (id) => {
+            if (this.state.selected[id]) {
+                delete this.state.selected[id];
+            } else {
+                this.state.selected[id] = true;
+            }
+        }
+
+
         return (
             <View style={styles.HostLobbyBody}>
 
@@ -75,7 +117,17 @@ export default class HostLobby extends Component {
                 </View>
 
                 <View style = {styles.TrackImageView}>
-
+                    {typeof this.state.lobby.playlists != "undefined" && <Image
+                        style = {styles.playlistImage}
+                        source = {{
+                            uri: "http://harrys-macbook-pro.local:3000/get-image",
+                            method: "POST",
+                            headers: {
+                                Pragma: "no-cache"
+                            },
+                            body: this.state.lobby.playlist.images[0]
+                        }}
+                    />}
                 </View>
 
                 <View style = {styles.SongInfo}>
@@ -83,7 +135,19 @@ export default class HostLobby extends Component {
                 </View>
 
                 <View style = {styles.Recommendations}>
-
+                    <FlatList
+                        data = {this.state.recommendations}
+                        renderItem = {({item}) => (
+                            <Recommendation
+                                id = {item.id}
+                                title = {item.name}
+                                artists = {item.artists}
+                                selected={this.state.selected[item.id] ? true : false}
+                                onSelect={onSelect(item.id)}
+                            />
+                        )}
+                        keyExtractor = {item => item.id}
+                    />
                 </View>
 
             </View>
