@@ -277,61 +277,12 @@ io.on("connection", (socket) => {
         });
     });
 
-    // method to get recommended songs from user playlist
-    // WebSocket vs RESTful
-    // uid is host uid (convenient for access_token)
-    app.post("/get_recommendations", async function(req, res) {
-        console.log("POST /get_recommendations");
-        // For now, get 5 random songs from playlist.
-        var access_token = get_access_token_from_uid(req.body.uid);
-
-        console.log("access_token: " + access_token);
-
-        var seed_artists = [
-            "7EQ0qTo7fWT7DPxmxtSYEc",
-            "2IDLDx25HU1nQMKde4n61a"
-        ];
-
-        var seed_genres = [
-
-        ];
-
-        var seed_tracks = [
-            "0cRvK1mcG6zmaD04D6PAnb"
-        ];
-
-        var body = {
-            limit: 100,
-            seed_artists: seed_artists,
-            seed_genres: seed_genres,
-            seed_tracks: seed_tracks
-        };
-
-        const url = "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body);
-
-        console.log(queryString.stringify(body));
-
-
-        try {
-            let res2 = await axios({
-                method: "GET",
-                url: "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body),
-                headers: {
-                    "Authorization": "Bearer " + access_token
-                }
-            });
-            let res3 = await res2.data.tracks.slice(0, 6);
-            console.log(res3);
-            res.send(res3);
-            return res3;
-        } catch (error) {
-            console.log(error);
-            res.send(error);
-            return error;
-        }
-
+    socket.on("getRecommendations", (uid) => {
+        console.log("socket.getRecommendations");
+        var lobby = get_lobby_from_uid(uid);
+        console.log(lobby.get_recommendations());
+        socket.emit("recommendations", lobby.get_recommendations());
     });
-
 });
 
 app.post("/get-image", (req, res) => {
@@ -342,6 +293,58 @@ app.post("/get-image", (req, res) => {
 
 app.post("/set-track", (req, res) => {
 
+});
+
+
+// method to get recommended songs from user playlist
+// WebSocket vs RESTful
+// uid is host uid (convenient for access_token)
+app.post("/get_recommendations", async function(req, res) {
+    console.log("POST /get_recommendations");
+
+    const uid = req.body.uid;
+    const access_token = get_access_token_from_uid(uid);
+
+    var seed_artists = [
+        "7EQ0qTo7fWT7DPxmxtSYEc",
+        "2IDLDx25HU1nQMKde4n61a"
+    ];
+
+    var seed_genres = [
+
+    ];
+
+    var seed_tracks = [
+        "0cRvK1mcG6zmaD04D6PAnb"
+    ];
+
+    var body = {
+        limit: 5,
+        seed_artists: seed_artists,
+        seed_genres: seed_genres,
+        seed_tracks: seed_tracks
+    };
+
+    const url = "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body);
+
+    try {
+        let res2 = await axios({
+            method: "GET",
+            url: url,
+            headers: {
+                "Authorization": "Bearer " + access_token
+            }
+        });
+
+        let tracks = await res2.data.tracks;
+
+        get_lobby_from_uid(uid).set_recommendations(tracks);
+        console.log(get_lobby_from_uid(uid).get_recommendations());
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
 });
 
 async function get_playlist_from_id(uid, pid) {

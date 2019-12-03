@@ -24,6 +24,7 @@ import DeviceInfo from "react-native-device-info";
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
+
 function Recommendation({id, title, selected, artists, onSelect}) {
     return (
         <TouchableOpacity
@@ -33,8 +34,8 @@ function Recommendation({id, title, selected, artists, onSelect}) {
                 {backgroundColor: selected ? "#6e3b6e" : "#f9c2ff"}
             ]}
         >
-            <Text style = {styles.recommendationTitle}>title</Text>
-            <Text style = {styles.recommendationArtists}>{artists.join()}</Text>
+            <Text style = {styles.recommendationTitle}>{title}</Text>
+            <Text style = {styles.recommendationArtists}>{artists}</Text>
 
         </TouchableOpacity>
     );
@@ -43,30 +44,26 @@ function Recommendation({id, title, selected, artists, onSelect}) {
 export default class HostLobby extends Component {
 
 
-    async getRecommendations() {
+    async setRecommendations() {
 
 
         const url = "http://harrys-macbook-pro.local:3000/get_recommendations";
 
-        try {
-            Alert.alert("getRecommendations");
-            let response = await fetch(url, {
-                method: "post",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    uid: DeviceInfo.getUniqueId()
-                })
-            });
-            let res = await response.json();
-            Alert.alert(res);
-            return res;
-        } catch (error) {
-            Alert.alert("error at getRecommendations: " + error);
-            return error;
-        }
+        Alert.alert("getRecommendations");
+        let response = await fetch(url, {
+            method: "post",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                uid: DeviceInfo.getUniqueId()
+            })
+        });
+        // let res = await response.json();
+        // this.setState({recommendations: res});
+        Alert.alert(response);
+        return response;
     }
 
     constructor(props) {
@@ -78,11 +75,50 @@ export default class HostLobby extends Component {
         }
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
 
-        this.getRecommendations().then((response) => {
-            this.setState({recommendations: response});
+        this.setRecommendations()
+        .then((response) => {
+            if (response.status == 200) { // OK
+                Alert.alert("holla");
+                socket.emit("getRecommendations", DeviceInfo.getUniqueId());
+                socket.on("recommendations", (tracks) => {
+                    Alert.alert(tracks);
+                    this.setState({recommendations: tracks});
+                });
+            } else if (response.status == 500) { // Internal server error
+                Alert.alert("Sorry, there was an internal server error when requestin lobby recommendations.");
+            } else {
+                Alert.alert("Unknown error when retrieving lobby recommendations.")
+            }
+        })
+        .catch((error) => {
+            Alert.alert(error.message);
         });
+
+
+        // const url = "http://harrys-macbook-pro.local:3000/get_recommendations";
+        //
+        // fetch(url, {
+        //     method: "post",
+        //     headers: {
+        //         Accept: "application/json",
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify({
+        //         uid: DeviceInfo.getUniqueId()
+        //     })
+        // })
+        // .then((response) => response.json())
+        // .then((responseJson) => {
+        //     Alert.alert(responseJson);
+        //     this.setState({recommendations: responseJson});
+        // })
+        // .catch((error) => {
+        //     Alert.alert("ERROR");
+        // });
+
+
 
     }
 
@@ -141,7 +177,7 @@ export default class HostLobby extends Component {
                             <Recommendation
                                 id = {item.id}
                                 title = {item.name}
-                                artists = {item.artists}
+                                artists = {item.artists.join()}
                                 selected={this.state.selected[item.id] ? true : false}
                                 onSelect={onSelect(item.id)}
                             />

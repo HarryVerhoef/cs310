@@ -6,6 +6,7 @@ class Lobby {
         this.votes = {};
         this.add_user(uid);
         this.track = null;
+        this.recommendations = [];
     }
 
     set_settings(name, playlist_uri, chat, lyrics, volume) {
@@ -69,7 +70,9 @@ class Lobby {
         return maxSong;
     }
 
-
+    get_recommendations() {
+        return this.recommendations;
+    }
 
     add_user(uid) {
         this.user_list.push(uid);
@@ -109,6 +112,10 @@ class Lobby {
 
     get_track() {
         return this.track
+    }
+
+    set_recommendations(recommendations) {
+        this.recommendations = recommendations;
     }
 }
 
