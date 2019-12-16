@@ -53,7 +53,6 @@ export default class HostLobby extends Component {
         let response = await fetch(url, {
             method: "post",
             headers: {
-                Accept: "application/json",
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -77,24 +76,24 @@ export default class HostLobby extends Component {
 
     componentDidMount = () => {
 
-        this.setRecommendations()
-        .then((response) => {
-            if (response.status == 200) { // OK
-                Alert.alert("holla");
-                socket.emit("getRecommendations", DeviceInfo.getUniqueId());
-                socket.on("recommendations", (tracks) => {
-                    Alert.alert(tracks);
-                    this.setState({recommendations: tracks});
-                });
-            } else if (response.status == 500) { // Internal server error
-                Alert.alert("Sorry, there was an internal server error when requestin lobby recommendations.");
-            } else {
-                Alert.alert("Unknown error when retrieving lobby recommendations.")
-            }
-        })
-        .catch((error) => {
-            Alert.alert(error.message);
-        });
+        // this.setRecommendations()
+        // .then((response) => {
+        //     if (response.status == 200) { // OK
+        //         Alert.alert("holla");
+        //         socket.emit("getRecommendations", DeviceInfo.getUniqueId());
+        //         socket.on("recommendations", (tracks) => {
+        //             Alert.alert(tracks);
+        //             this.setState({recommendations: tracks});
+        //         });
+        //     } else if (response.status == 500) { // Internal server error
+        //         Alert.alert("Sorry, there was an internal server error when requestin lobby recommendations.");
+        //     } else {
+        //         Alert.alert("Unknown error when retrieving lobby recommendations.")
+        //     }
+        // })
+        // .catch((error) => {
+        //     Alert.alert(error.message);
+        // });
 
 
         // const url = "http://harrys-macbook-pro.local:3000/get_recommendations";
@@ -102,23 +101,29 @@ export default class HostLobby extends Component {
         // fetch(url, {
         //     method: "post",
         //     headers: {
-        //         Accept: "application/json",
         //         "Content-Type": "application/json"
         //     },
         //     body: JSON.stringify({
         //         uid: DeviceInfo.getUniqueId()
         //     })
         // })
-        // .then((response) => response.json())
-        // .then((responseJson) => {
-        //     Alert.alert(responseJson);
-        //     this.setState({recommendations: responseJson});
+        // .then(() => {
+        //     Alert.alert("holla");
+        //     socket.emit("getRecommendations", DeviceInfo.getUniqueId());
+        //     socket.on("recommendations", (tracks) => {
+        //         Alert.alert(tracks);
+        //         this.setState({recommendations: tracks});
+        //     });
         // })
         // .catch((error) => {
         //     Alert.alert("ERROR");
         // });
 
-
+        socket.emit("set_recommendations", DeviceInfo.getUniqueId());
+        socket.on("recommendations_set", (tracks) => {
+            Alert.alert(tracks);
+            this.setState({recommendations: tracks});
+        });
 
     }
 
