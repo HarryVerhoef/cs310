@@ -133,15 +133,15 @@ export default class CreateLobby extends Component {
 
                         {this.state.isConnectedToSpotify  && !this.state.playlistModal && <TouchableHighlight
                             onPress = {() => {
-                                spotifySDKBridge.getPlaylists((error, results) => {
+                                spotifySDKBridge.getPlaylists((error, result) => {
                                     if (error) {
                                         Alert.alert(error);
                                     } else {
-                                        socket.emit("getPlaylists", DeviceInfo.getUniqueId());
-                                        socket.on("gotPlaylists", (data) => {
-                                            this.togglePlaylistModal(data);
-                                        });
-
+                                        this.togglePlaylistModal(result);
+                                        // socket.emit("getPlaylists", DeviceInfo.getUniqueId());
+                                        // socket.on("gotPlaylists", (data) => {
+                                        //     this.togglePlaylistModal(data);
+                                        // });
                                     }
                                 });
                             }}

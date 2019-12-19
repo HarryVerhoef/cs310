@@ -244,11 +244,8 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   if (self.appRemote.isConnected) {
     
     NSLog(@"Attempting to get playlists and appRemote is connected...");
-    if ([self httpPostRequest:@"http://harrys-macbook-pro.local:3000/get_playlists"]) {
-      return YES;
-    } else {
-      return NO;
-    }
+    NSDictionary *responseDictionary = [self httpPostRequest:@"http://harrys-macbook-pro.local:3000/get_playlists"];
+    return responseDictionary;
 //    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
 //    __block NSMutableArray *contentItems = [[NSMutableArray alloc] init];
 //
