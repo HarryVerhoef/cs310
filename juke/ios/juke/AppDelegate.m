@@ -31,8 +31,8 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   idfv = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
   self.configuration =
   [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:[NSURL URLWithString:spotifyRedirectURLString]];
-  self.configuration.tokenSwapURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/swap"];
-  self.configuration.tokenRefreshURL = [NSURL URLWithString: @"http://harrys-macbook-pro.local:3000/refresh"];
+  self.configuration.tokenSwapURL = [NSURL URLWithString: @"http://jukeio.us-west-2.elasticbeanstalk.com:3000/swap"];
+  self.configuration.tokenRefreshURL = [NSURL URLWithString: @"http://jukeio.us-west-2.elasticbeanstalk.com:3000/refresh"];
   self.sessionManager = [SPTSessionManager sessionManagerWithConfiguration:self.configuration delegate:self];
   
   
@@ -244,7 +244,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   if (self.appRemote.isConnected) {
     
     NSLog(@"Attempting to get playlists and appRemote is connected...");
-    NSDictionary *responseDictionary = [self httpPostRequest:@"http://harrys-macbook-pro.local:3000/get_playlists"];
+    NSDictionary *responseDictionary = [self httpPostRequest:@" http://jukeio.us-west-2.elasticbeanstalk.com:3000/get_playlists"];
     return responseDictionary;
 //    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
 //    __block NSMutableArray *contentItems = [[NSMutableArray alloc] init];

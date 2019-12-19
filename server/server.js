@@ -27,6 +27,7 @@ if (cluster.isMaster) {
 } else {
     var AWS = require('aws-sdk');
     var express = require('express');
+    var app = express();
     var bodyParser = require('body-parser');
     const User = require("./User").User;
     const Lobby = require("./Lobby").Lobby;
@@ -60,7 +61,7 @@ if (cluster.isMaster) {
     });
 
     var ddbTable = "device";
-    var app = express();
+
 
     app.post("/awssss", (req, res) => {
         var item = {
@@ -404,7 +405,7 @@ if (cluster.isMaster) {
                 "set access_token = :a",
                 {
                     ":a": req.body.access_token
-                }
+                },
                 (err, msg) => {
                     if (err) {
                         console.log("Error setting device access token: " + msg);
@@ -449,7 +450,7 @@ if (cluster.isMaster) {
             updateItemInDDB(
                 "lobby",
                 {
-                    "lobby_key": lobby_key;
+                    "lobby_key": lobby_key
                 },
                 "set lobby_name = :n, lobby_playlist_id = :p, lobby_chatEnabled = :c, lobby_volumeEnabled = :v",
                 {
@@ -535,10 +536,10 @@ if (cluster.isMaster) {
         socket.on("getLobbyInfo", (uid) => {
             // lobby = lobbies[users[uid].get_lobby()];
             const lobby_key = get_lobby_from_uid(uid);
-            const lobby_name;
-            const lobby_track_id;
-            const lobby_track_name;
-            const lobby_track_image_url;
+            var lobby_name;
+            var lobby_track_id;
+            var lobby_track_name;
+            var lobby_track_image_url;
 
             // console.log("socket.getLobbyInfo");
             // console.log(lobby.getName());
@@ -585,7 +586,7 @@ if (cluster.isMaster) {
                         console.log("Error retrieving lobby recommendations for lobby " + lobby_key + "..." + data);
                     } else {
                         console.log("Successfully retrieved lobby recommendations");
-                        socket.emit("recommendations", data.Item.lobby_recommendations));
+                        socket.emit("recommendations", data.Item.lobby_recommendations);
                     }
                 }
             );
@@ -778,7 +779,7 @@ if (cluster.isMaster) {
         getSingleItemFromDDB(
             "device",
             {
-                "device_id": uid;
+                "device_id": uid
             },
             (err, data) => {
                 if (err) {

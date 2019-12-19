@@ -70,7 +70,7 @@ export default class CreateLobby extends Component {
 
                     style = {styles.playlistImage}
                     source = {{
-                        uri: "http://harrys-macbook-pro.local:3000/get-image",
+                        uri: "http://jukeio.us-west-2.elasticbeanstalk.com:3000/get-image",
                         method: "POST",
                         headers: {
                             Pragma: "no-cache"
@@ -227,7 +227,7 @@ export default class CreateLobby extends Component {
                 <View style = {styles.createLobby}>
                     <TouchableHighlight
                         onPress = {() => {
-                            fetch("http://harrys-macbook-pro.local:3000/make_lobby", {
+                            fetch("http://jukeio.us-west-2.elasticbeanstalk.com:3000/make_lobby", {
                                 method: "POST",
                                 headers: {
                                     Accept: "application/json",

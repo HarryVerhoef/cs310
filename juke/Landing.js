@@ -19,7 +19,7 @@ import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
 
-global.socket = io("http://harrys-macbook-pro.local:3000");
+global.socket = io("http://jukeio.us-west-2.elasticbeanstalk.com:3000");
 socket.emit("login", DeviceInfo.getUniqueId());
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
