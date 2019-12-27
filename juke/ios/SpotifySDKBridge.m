@@ -46,8 +46,8 @@ RCT_EXPORT_METHOD(getPlaylists:(RCTResponseSenderBlock)jsCallback) {
 //  NSArray *result = [self.appDelegate getPlaylists];
 //  jsCallback(@[[NSNull null], result]);
   
-  NSNumber *result = [NSNumber numberWithBool:[self.appDelegate getPlaylists]];
-  jsCallback(@[[NSNull null], result]);
+//  NSNumber *result = [NSNumber numberWithBool:[self.appDelegate getPlaylists]];
+  jsCallback(@[[NSNull null], [self.appDelegate getPlaylists]]);
 }
 
 RCT_EXPORT_METHOD(play:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallback) {
@@ -65,6 +65,10 @@ RCT_EXPORT_METHOD(skip:(RCTResponseSenderBlock)jsCallback) {
 RCT_EXPORT_METHOD(queue:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallback) {
   NSNumber *result = [NSNumber numberWithBool:[self.appDelegate queue:uri]];
   jsCallback(@[[NSNull null], result]);
+}
+
+RCT_EXPORT_METHOD(getAccessToken:(RCTResponseSenderBlock)jsCallback) {
+  jsCallback(@[[NSNull null], [self.appDelegate getAccessToken]]);
 }
 
 @end

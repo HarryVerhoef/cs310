@@ -47,7 +47,7 @@ export default class HostLobby extends Component {
     async setRecommendations() {
 
 
-        const url = "http://jukeio.us-west-2.elasticbeanstalk.com:3000/get_recommendations";
+        const url = "http://jukeio.us-west-2.elasticbeanstalk.com:8081/get_recommendations";
 
         Alert.alert("getRecommendations");
         let response = await fetch(url, {
@@ -96,7 +96,7 @@ export default class HostLobby extends Component {
         // });
 
 
-        // const url = "http://harrys-macbook-pro.local:3000/get_recommendations";
+        // const url = "http://harrys-macbook-pro.local:8081/get_recommendations";
         //
         // fetch(url, {
         //     method: "post",
@@ -161,7 +161,7 @@ export default class HostLobby extends Component {
                     {typeof this.state.lobby.playlists != "undefined" && <Image
                         style = {styles.playlistImage}
                         source = {{
-                            uri: "http://jukeio.us-west-2.elasticbeanstalk.com:3000/get-image",
+                            uri: "http://jukeio.us-west-2.elasticbeanstalk.com:8081/get-image",
                             method: "POST",
                             headers: {
                                 Pragma: "no-cache"

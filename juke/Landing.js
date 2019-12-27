@@ -19,11 +19,12 @@ import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
 
-global.socket = io("http://jukeio.us-west-2.elasticbeanstalk.com:3000");
+global.socket = io("http://jukeio.us-west-2.elasticbeanstalk.com:8081");
 socket.emit("login", DeviceInfo.getUniqueId());
-
+socket.on("successfulLogin", (data) => {
+    Alert.alert(data);
+});
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
-
 
 
 export default class Landing extends Component {

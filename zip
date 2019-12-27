@@ -1,3 +1,4 @@
 #!/bin/bash
 rm -rf server.zip
-zip -j server.zip  "server/server.js" "server/Lobby.js" "server/User.js" "server/package.json" "server/package-lock.json"
+cd server
+zip -r ../server.zip  "server.js" "Lobby.js" "User.js" "package.json" "package-lock.json" ".ebextensions"

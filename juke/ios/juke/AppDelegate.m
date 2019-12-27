@@ -227,12 +227,14 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
           responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&parseError];
           NSLog(@"The response is - %@",responseDictionary);
           NSInteger success = [[responseDictionary objectForKey:@"success"] integerValue];
+          dispatch_semaphore_signal(sema);
       } else {
           NSLog(@"Error at POST request");
-        NSLog(@"Status code: %ld", (long)[httpResponse statusCode]);
-        NSLog(@"Header fields: %@", [httpResponse allHeaderFields]);
+          NSLog(@"Status code: %ld", (long)[httpResponse statusCode]);
+          NSLog(@"Header fields: %@", [httpResponse allHeaderFields]);
+          dispatch_semaphore_signal(sema);
       }
-    dispatch_semaphore_signal(sema);
+    
   }];
   [dataTask resume];
   dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
@@ -240,11 +242,12 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 }
 
 
-- (BOOL)getPlaylists {
+- (NSDictionary *)getPlaylists {
   if (self.appRemote.isConnected) {
     
     NSLog(@"Attempting to get playlists and appRemote is connected...");
     NSDictionary *responseDictionary = [self httpPostRequest:@" http://jukeio.us-west-2.elasticbeanstalk.com:3000/get_playlists"];
+    NSLog(@"responseDictionary ===== %@", responseDictionary);
     return responseDictionary;
 //    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
 //    __block NSMutableArray *contentItems = [[NSMutableArray alloc] init];
@@ -280,7 +283,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 //    return contentItems;
   } else {
     NSLog(@"Attempted to get playlists but appRemote was not connected.");
-    return NO;
+    return [NSMutableDictionary dictionary];
   }
 }
 
@@ -367,6 +370,10 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
     NSLog(@"Attempting to queue song with uri: %@, with appRemote disconnected", uri);
     return NO;
   }
+}
+
+- (NSString *)getAccessToken {
+  return self.sessionManager.session.accessToken;
 }
 
 @end

@@ -70,7 +70,7 @@ export default class CreateLobby extends Component {
 
                     style = {styles.playlistImage}
                     source = {{
-                        uri: "http://jukeio.us-west-2.elasticbeanstalk.com:3000/get-image",
+                        uri: "http://jukeio.us-west-2.elasticbeanstalk.com:8081/get-image",
                         method: "POST",
                         headers: {
                             Pragma: "no-cache"
@@ -133,15 +133,54 @@ export default class CreateLobby extends Component {
 
                         {this.state.isConnectedToSpotify  && !this.state.playlistModal && <TouchableHighlight
                             onPress = {() => {
-                                spotifySDKBridge.getPlaylists((error, result) => {
+                                // spotifySDKBridge.getPlaylists((error, result) => {
+                                //     if (error) {
+                                //         Alert.alert(error);
+                                //     } else {
+                                //         Alert.alert("Result...." + JSON.stringify(result));
+                                //         this.togglePlaylistModal(result);
+                                //         // socket.emit("getPlaylists", DeviceInfo.getUniqueId());
+                                //         // socket.on("gotPlaylists", (data) => {
+                                //         //     this.togglePlaylistModal(data);
+                                //         // });
+                                //     }
+                                // });
+                                spotifySDKBridge.getAccessToken( async (error, result) => {
                                     if (error) {
                                         Alert.alert(error);
                                     } else {
-                                        this.togglePlaylistModal(result);
-                                        // socket.emit("getPlaylists", DeviceInfo.getUniqueId());
+                                        // socket.emit("accessToken", {
+                                        //     uid: DeviceInfo.getUniqueId(),
+                                        //     access_token: result
+                                        // });
+
+
+                                        const url = "http://jukeio.us-west-2.elasticbeanstalk.com:8081/get_playlists";
+
+                                        try {
+                                            Alert.alert("getting playlists...");
+                                            let response = await fetch(url, {
+                                                method: "post",
+                                                headers: {
+                                                    Accept: "application/json",
+                                                    "Content-Type": "application/json"
+                                                },
+                                                body: JSON.stringify({
+                                                    uid: DeviceInfo.getUniqueId(),
+                                                    access_token: result
+                                                })
+                                            });
+                                            Alert.alert("response::::" + response);
+                                            this.togglePlaylistModal(response);
+                                        } catch (error) {
+                                            Alert.alert("Error while getting playlists: " + error);
+                                        }
+
+
                                         // socket.on("gotPlaylists", (data) => {
                                         //     this.togglePlaylistModal(data);
                                         // });
+
                                     }
                                 });
                             }}
@@ -227,7 +266,7 @@ export default class CreateLobby extends Component {
                 <View style = {styles.createLobby}>
                     <TouchableHighlight
                         onPress = {() => {
-                            fetch("http://jukeio.us-west-2.elasticbeanstalk.com:3000/make_lobby", {
+                            fetch("http://jukeio.us-west-2.elasticbeanstalk.com/make_lobby", {
                                 method: "POST",
                                 headers: {
                                     Accept: "application/json",

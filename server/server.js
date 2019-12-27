@@ -28,16 +28,15 @@ if (cluster.isMaster) {
     var AWS = require('aws-sdk');
     var express = require('express');
     var app = express();
-    var bodyParser = require('body-parser');
-    const User = require("./User").User;
-    const Lobby = require("./Lobby").Lobby;
     var server = require("http").Server(app);
+    var bodyParser = require('body-parser');
+    require("dotenv").config();
+    // var server = require("http").Server(app);
     var io = require("socket.io")(server);
-    var crypto = require("crypto");
+    // var crypto = require("crypto");
     var axios = require("axios");
     var queryString = require("querystring");
-    var bodyParser = require('body-parser');
-    var mongo = require("mongodb").MongoClient;
+    // var mongo = require("mongodb").MongoClient;
     var request = require("request");
 
     app.use(bodyParser.json()); // support json encoded bodies
@@ -45,6 +44,7 @@ if (cluster.isMaster) {
 
     // This is how the secret key was generated:
     // console.log(crypto.randomBytes(64).toString("base64").substring(0,24));
+
     var secretKey = process.env.SECRET_KEY;
     var client_id = "ff19e2ea3546447e916e43dcda51a298";
     var client_secret = process.env.CLIENT_SECRET;
@@ -127,9 +127,33 @@ if (cluster.isMaster) {
         });
     }
 
+    /* updateItemInDDB - Puts a new item into an AWS NoSQL DynamoDB table
+    ** @param table_name::String - Name of the table
+    ** @param key::Object - Key object pointing to item
+    ** @param expression::String - update expression to be executed on DynamoDB
+    ** @param params::Object - Object containing parameters for the expression
+    ** @param callback::Function - Callback method to be invoked upon completion
+    */
+    function updateItemInDDB(table_name, key, expression, params, callback) {
+
+        ddb.updateItem({
+            TableName: table_name,
+            Key: key,
+            UpdateExpression: expression,
+            ExpressionAttributeValues: params,
+            ReturnValues: "UPDATED_NEW"
+        }, (err, data) => {
+            if (err) {
+                callback(1, err);
+            } else {
+                callback(0, data);
+            }
+        });
+    }
+
     var port = process.env.PORT || 3000;
 
-    var server = app.listen(port, function () {
+    var http_server = app.listen(port, function () {
         console.log('Server running at http://127.0.0.1:' + port + '/');
     });
 
@@ -387,53 +411,19 @@ if (cluster.isMaster) {
 
 
 
-        socket.on("getPlaylists", (uid) => {
-            console.log("emit getPlaylists: " + uid);
-            console.log(users);
+        socket.on("accessToken", (data) => {
+            const uid = data.uid;
+            const access_token = data.access_token;
+            console.log("emit accessToken: " + uid + " " + access_token);
+
+
+
+
             socket.emit("gotPlaylists", users[uid].getPlaylists());
         });
 
 
-        app.post("/get_playlists", async function(req, res) {
-            console.log("POST /get_playlists");
 
-            updateItemInDDB(
-                "device",
-                {
-                    "device_id": req.body.idfv
-                },
-                "set access_token = :a",
-                {
-                    ":a": req.body.access_token
-                },
-                (err, msg) => {
-                    if (err) {
-                        console.log("Error setting device access token: " + msg);
-                    } else {
-                        console.log("Successfully added access_token to device");
-                    }
-                }
-            );
-
-            await get_spotify_user(req.body.access_token, (user) => {
-                axios({
-                    method: "get",
-                    url: "https://api.spotify.com/v1/users/" + user.data.id + "/playlists",
-                    headers: {
-                        "Authorization": "Bearer " + req.body.access_token
-                    }
-                }).then((response) => {
-                    // users[req.body.idfv].setPlaylists(response.data.items);
-                    // res.sendStatus(200);
-                    res.send(response.data.items);
-                    return response;
-                }).catch((error) => {
-                    console.log("Error retrieving user playlists: " + error);
-                    res.sendStatus(500);
-                    return error;
-                });
-            });
-        });
 
         app.post("/make_lobby", async function(req, res) {
             console.log("POST /make_lobby");
@@ -796,6 +786,47 @@ if (cluster.isMaster) {
     io.on("setHash", function(socket) {
         console.log("setHash recevied");
         socket.emit("getHash", crypto.createHash("sha256"));
+    });
+
+    app.post("/get_playlists", async function(req, res) {
+        console.log("POST /get_playlists");
+
+        updateItemInDDB(
+            "device",
+            {
+                "device_id": req.body.uid
+            },
+            "set access_token = :a",
+            {
+                ":a": req.body.access_token
+            },
+            (err, msg) => {
+                if (err) {
+                    console.log("Error setting device access token: " + msg);
+                } else {
+                    console.log("Successfully added access_token to device");
+                }
+            }
+        );
+
+        await get_spotify_user(req.body.access_token, (user) => {
+            axios({
+                method: "get",
+                url: "https://api.spotify.com/v1/users/" + user.data.id + "/playlists",
+                headers: {
+                    "Authorization": "Bearer " + req.body.access_token
+                }
+            }).then((response) => {
+                // users[req.body.idfv].setPlaylists(response.data.items);
+                // res.sendStatus(200);
+                res.send(response.data.items);
+                // socket.emit("gotPlaylists", response);
+            }).catch((error) => {
+                console.log("Error retrieving user playlists: " + error);
+                res.sendStatus(500);
+                // socket.emit("gotPlaylists", {});
+            });
+        });
     });
 
 }
