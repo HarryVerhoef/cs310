@@ -1,0 +1,28 @@
+{
+  "name": "swap",
+  "version": "1.0.0",
+  "description": "the swap http pathway",
+  "main": "swap.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HarryVerhoef/cs310.git"
+  },
+  "keywords": [
+    "swap",
+    "oauth",
+    "token"
+  ],
+  "author": "Harry Verhoef",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HarryVerhoef/cs310/issues"
+  },
+  "homepage": "https://github.com/HarryVerhoef/cs310#readme",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "querystring": "^0.2.0"
+  }
+}

@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* jukeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* jukeTests.m */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
-		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -19,7 +18,6 @@
 		B044F1E5CA18FD1FD62E96FB /* libPods-jukeTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58842A9A2F68F4A3184A51CD /* libPods-jukeTests.a */; };
 		B4A3F72364263000F756064B /* libPods-juke.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C056FE58B4D2A9160BBB29F6 /* libPods-juke.a */; };
 		B6D4D3751FF7B133AF3C77F9 /* libPods-juke-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2141F70E7879C5F1667B89C1 /* libPods-juke-tvOS.a */; };
-		BD13A5C523AD3800007406FE /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB61A68108700A75B9A /* Info.plist */; };
 		BD1FD70322FB0C4500A11AE1 /* libRNGestureHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BD1FD70222FB0C4500A11AE1 /* libRNGestureHandler.a */; };
 		BD1FD70A22FDCA4E00A11AE1 /* SpotifySDKBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1FD70922FDCA4E00A11AE1 /* SpotifySDKBridge.m */; };
 		BDF2CA5B22F9BB0600A18C5B /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDF2CA5A22F9BB0600A18C5B /* SpotifyiOS.framework */; };
@@ -369,8 +367,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
-				BD13A5C523AD3800007406FE /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

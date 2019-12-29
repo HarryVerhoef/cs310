@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf swap.zip
+zip -r swap.zip . -x "zip"

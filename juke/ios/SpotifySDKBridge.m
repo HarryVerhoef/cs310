@@ -26,7 +26,6 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(instantiateBridge:(RCTResponseSenderBlock)jsCallback)
 {
   dispatch_async(dispatch_get_main_queue(), ^{
-    self.appDelegate  = (AppDelegate*)[[UIApplication sharedApplication] delegate];
     jsCallback(@[[NSNull null], @1]);
   });
   
@@ -36,6 +35,7 @@ RCT_EXPORT_METHOD(instantiateBridge:(RCTResponseSenderBlock)jsCallback)
 RCT_EXPORT_METHOD(auth:(RCTResponseSenderBlock)jsCallback)
 {
   dispatch_async(dispatch_get_main_queue(), ^{
+    self.appDelegate  = (AppDelegate*)[[UIApplication sharedApplication] delegate];
     NSNumber *result = [NSNumber numberWithBool:[self.appDelegate invokeAuthModal]];
     jsCallback(@[[NSNull null], result]);
   });

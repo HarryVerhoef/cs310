@@ -70,7 +70,7 @@ export default class CreateLobby extends Component {
 
                     style = {styles.playlistImage}
                     source = {{
-                        uri: "http://jukeio.us-west-2.elasticbeanstalk.com:8081/get-image",
+                        uri: "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get-image",
                         method: "POST",
                         headers: {
                             Pragma: "no-cache"
@@ -155,7 +155,7 @@ export default class CreateLobby extends Component {
                                         // });
 
 
-                                        const url = "http://jukeio.us-west-2.elasticbeanstalk.com:8081/get_playlists";
+                                        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_playlists";
 
                                         try {
                                             Alert.alert("getting playlists...");
@@ -266,7 +266,7 @@ export default class CreateLobby extends Component {
                 <View style = {styles.createLobby}>
                     <TouchableHighlight
                         onPress = {() => {
-                            fetch("http://jukeio.us-west-2.elasticbeanstalk.com/make_lobby", {
+                            fetch("https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby", {
                                 method: "POST",
                                 headers: {
                                     Accept: "application/json",

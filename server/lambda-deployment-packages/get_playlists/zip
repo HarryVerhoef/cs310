@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf get_playlists.zip
+zip -r get_playlists.zip . -x "zip"

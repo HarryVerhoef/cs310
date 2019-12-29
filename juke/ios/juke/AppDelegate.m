@@ -21,6 +21,8 @@ SPTConfiguration *configuration;
 SPTAppRemote *appRemote;
 int expiryTime = 0;
 
+dispatch_semaphore_t authSema;
+
 NSString *idfv;
 
 static NSString * const spotifyClientID = @"ff19e2ea3546447e916e43dcda51a298";
@@ -28,11 +30,12 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  authSema = dispatch_semaphore_create(0);
   idfv = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
   self.configuration =
   [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:[NSURL URLWithString:spotifyRedirectURLString]];
-  self.configuration.tokenSwapURL = [NSURL URLWithString: @"http://jukeio.us-west-2.elasticbeanstalk.com:3000/swap"];
-  self.configuration.tokenRefreshURL = [NSURL URLWithString: @"http://jukeio.us-west-2.elasticbeanstalk.com:3000/refresh"];
+  self.configuration.tokenSwapURL = [NSURL URLWithString: @"https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/swap"];
+  self.configuration.tokenRefreshURL = [NSURL URLWithString: @"https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/refresh"];
   self.sessionManager = [SPTSessionManager sessionManagerWithConfiguration:self.configuration delegate:self];
   
   
@@ -98,11 +101,13 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
   self.appRemote.connectionParameters.accessToken = session.accessToken;
   [self.appRemote connect];
+  dispatch_semaphore_signal(authSema);
 }
 
 - (void)sessionManager:(SPTSessionManager *)manager didFailWithError:(NSError *)error
 {
   NSLog(@"sessionManager fail: %@", error);
+  dispatch_semaphore_signal(authSema);
 }
 
 - (void)sessionManager:(SPTSessionManager *)manager didRenewSession:(SPTSession *)session
@@ -190,9 +195,9 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 //    NSLog(@"Failed at authorizaAndPlayURI");
 //  }
   
+  dispatch_semaphore_wait(authSema, DISPATCH_TIME_FOREVER);
   
-  
-  return YES;
+  return self.appRemote.isConnected;
   
 }
 
@@ -246,7 +251,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   if (self.appRemote.isConnected) {
     
     NSLog(@"Attempting to get playlists and appRemote is connected...");
-    NSDictionary *responseDictionary = [self httpPostRequest:@" http://jukeio.us-west-2.elasticbeanstalk.com:3000/get_playlists"];
+    NSDictionary *responseDictionary = [self httpPostRequest:@" https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_playlists"];
     NSLog(@"responseDictionary ===== %@", responseDictionary);
     return responseDictionary;
 //    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
