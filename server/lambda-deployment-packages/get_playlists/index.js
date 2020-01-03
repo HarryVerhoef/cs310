@@ -1,70 +1,79 @@
 "use static";
 const queryString = require("querystring");
 const axios = require("axios");
-const doc = require("dynamo-doc");
-const dynamo = doc.DynamoDB();
-const client_id = "ff19e2ea3546447e916e43dcda51a298";
-const client_secret = process.env.CLIENT_SECRET;
-
+const AWS = require("aws-sdk");
+const dynamo = new AWS.DynamoDB();
 
 exports.handler = async (event, context, callback) => {
     console.log("POST /get_playlist");
-    console.log("CLIENT_SECRET: " + client_secret);
     console.log(event);
     const req = queryString.parse(event.body);
 
-    var spotify_user_object;
+    var spotify_id;
     var res;
 
     // GET USER ID FROM ACCESS_TOKEN
     try {
-        let response = await axios({
+        let user = await axios({
             method: "get",
             url: "https://api.spotify.com/v1/me",
             headers: {
                 "Authorization": "Bearer " + req.access_token
             }
         });
-        spotify_user_object = response;
+
+
+        spotify_id = user.data.id;
+
+        // PUT ITEM IN DynamoDB
+        dynamo.putItem({
+            TableName: "device",
+            Item: {
+                "device_id": {"S": req.uid},
+                "spotify_user_id": {"S": spotify_id},
+                "access_token": {"S": req.access_token}
+            }
+        }, (err, data) => {
+            if (err) {
+                res = {
+                    statusCode: 500,
+                    body: JSON.stringify({
+                        data: err
+                    })
+                };
+                console.log(res);
+                return res;
+            } else {
+                console.log("UPDATED ITEM: " + data);
+            }
+        });
+
+        let playlists = await axios({
+            method: "get",
+            url: "https://api.spotify.com/v1/users/" + spotify_id + "/playlists",
+            headers: {
+                "Authorization": "Bearer " + req.access_token
+            }
+        });
+
         res = {
             statusCode: 200,
-            body: JSON.stringify(response.data.items)
-        }
+            body: JSON.stringify(playlists.data.items)
+        };
+
+        console.log(res);
+
+        return res;
+
     } catch (error) {
+        console.log("ERROR" + error);
         res = {
             statusCode: 500,
             body: JSON.stringify({
                 data: error
             })
-        }
+        };
+        console.log(res);
         return res;
     }
-
-    // UPDATE ITEM IN DynamoDB
-    dynamo.updateItem({
-        TableName: "device",
-        Key: {
-            "device_id": req.uid
-        },
-        UpdateExpression: "set access_token = :a spotify_user_id = :s",
-        ExpressionAttributeValues: {
-            ":a": {"S": req.access_token},
-            ":s": {"S": spotify_user_object.id}
-        },
-        ReturnValues: "UPDATED_NEW",
-    }, (err, data) => {
-        if (err) {
-            res = {
-                statusCode: 500,
-                body: JSON.stringify({
-                    data: data
-                })
-            }
-            return res;
-        } else {
-            console.log("UPDATED ITEM: " + data);
-        }
-    });
-
-    return res;
 };

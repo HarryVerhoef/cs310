@@ -104,21 +104,21 @@ export default class CreateLobby extends Component {
                     <View style = {styles.spotifyFrameChild}>
                         {!this.state.isConnectedToSpotify && <TouchableHighlight
                             onPress = {() => {
-                                spotifySDKBridge.instantiateBridge((error, result) => {
+                                // spotifySDKBridge.instantiateBridge((error, result) => {
+                                //     if (error) {
+                                //         Alert.alert("Error instantiating bridge: " + error);
+                                //     } else if (result == 1) {
+                                //
+                                //     } else if (result == 0) {
+                                //         Alert.alert("Result = 0 @ instantiateBridge");
+                                //     }
+                                // });
+
+                                spotifySDKBridge.auth((error, result) => {
                                     if (error) {
-                                        Alert.alert("Error instantiating bridge: " + error);
-                                    } else if (result == 1) {
-                                        spotifySDKBridge.auth((error, result) => {
-                                            if (error) {
-                                                Alert.alert("Error authenticating: " + error);
-                                            } else if (result == 1) {
-                                                this.setState({isConnectedToSpotify: true});
-                                            } else if (result == 0) {
-                                                Alert.alert("Result = 0 @ auth");
-                                            }
-                                        });
-                                    } else if (result == 0) {
-                                        Alert.alert("Result = 0 @ instantiateBridge");
+                                        Alert.alert("Error authenticating: " + error);
+                                    } else {
+                                        this.setState({isConnectedToSpotify: true});
                                     }
                                 });
 
@@ -162,7 +162,6 @@ export default class CreateLobby extends Component {
                                             let response = await fetch(url, {
                                                 method: "post",
                                                 headers: {
-                                                    Accept: "application/json",
                                                     "Content-Type": "application/json"
                                                 },
                                                 body: JSON.stringify({

@@ -21,7 +21,6 @@ SPTConfiguration *configuration;
 SPTAppRemote *appRemote;
 int expiryTime = 0;
 
-dispatch_semaphore_t authSema;
 
 NSString *idfv;
 
@@ -30,7 +29,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  authSema = dispatch_semaphore_create(0);
   idfv = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
   self.configuration =
   [[SPTConfiguration alloc] initWithClientID:spotifyClientID redirectURL:[NSURL URLWithString:spotifyRedirectURLString]];
@@ -101,13 +99,11 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
   self.appRemote.connectionParameters.accessToken = session.accessToken;
   [self.appRemote connect];
-  dispatch_semaphore_signal(authSema);
 }
 
 - (void)sessionManager:(SPTSessionManager *)manager didFailWithError:(NSError *)error
 {
   NSLog(@"sessionManager fail: %@", error);
-  dispatch_semaphore_signal(authSema);
 }
 
 - (void)sessionManager:(SPTSessionManager *)manager didRenewSession:(SPTSession *)session
@@ -194,8 +190,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 //  } else {
 //    NSLog(@"Failed at authorizaAndPlayURI");
 //  }
-  
-  dispatch_semaphore_wait(authSema, DISPATCH_TIME_FOREVER);
   
   return self.appRemote.isConnected;
   

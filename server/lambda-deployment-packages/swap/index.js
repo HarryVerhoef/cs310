@@ -8,7 +8,6 @@ const client_secret = process.env.CLIENT_SECRET;
 
 exports.handler = async (event, context, callback) => {
     console.log("POST /swap");
-    console.log("CLIENT_SECRET: " + client_secret);
     console.log(event);
     const code = queryString.parse(event.body).code;
 
