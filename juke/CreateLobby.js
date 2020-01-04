@@ -97,16 +97,6 @@ export default class CreateLobby extends Component {
                     <View style = {styles.spotifyFrameChild}>
                         {!this.state.isConnectedToSpotify && <TouchableHighlight
                             onPress = {() => {
-                                // spotifySDKBridge.instantiateBridge((error, result) => {
-                                //     if (error) {
-                                //         Alert.alert("Error instantiating bridge: " + error);
-                                //     } else if (result == 1) {
-                                //
-                                //     } else if (result == 0) {
-                                //         Alert.alert("Result = 0 @ instantiateBridge");
-                                //     }
-                                // });
-
                                 spotifySDKBridge.auth((error, result) => {
                                     if (error) {
                                         Alert.alert("Error authenticating: " + error);
@@ -114,8 +104,6 @@ export default class CreateLobby extends Component {
                                         this.setState({isConnectedToSpotify: true});
                                     }
                                 });
-
-
                             }}
                         >
                             <View style = {styles.spotifyConnectButton}>
@@ -165,8 +153,6 @@ export default class CreateLobby extends Component {
                         {this.state.playlistModal && <View
                             style = {styles.setPlaylistCarousel}
                         >
-
-
                             <Carousel
                                 ref = {(c) => { this._carousel = c; }}
                                 data = {this.state.playlists}
@@ -182,7 +168,6 @@ export default class CreateLobby extends Component {
                                     this.setState({activePlaylist: this.state.playlists[slideIndex]});
                                 }}
                             />
-
                         </View>}
                     </View>
                 </View>
@@ -236,13 +221,15 @@ export default class CreateLobby extends Component {
                 <View style = {styles.createLobby}>
                     <TouchableHighlight
                         onPress = {() => {
-                            fetch("https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby", {
+
+                            const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby";
+                            fetch(url, {
                                 method: "POST",
                                 headers: {
                                     Accept: "application/json",
-                                    "Content-Type": "application/json"
+                                    "Content-Type": "application/x-www-form-urlencoded"
                                 },
-                                body: JSON.stringify({
+                                body: qs.stringify({
                                     uid: DeviceInfo.getUniqueId(),
                                     name: this.state.lobbyName,
                                     playlist: this.state.activePlaylist.id,

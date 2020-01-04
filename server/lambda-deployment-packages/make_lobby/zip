@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf make_lobby.zip
+zip -r make_lobby.zip . -x "zip"
