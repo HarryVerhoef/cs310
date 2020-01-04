@@ -24,6 +24,7 @@ window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 import Carousel from "react-native-snap-carousel";
 import DeviceInfo from "react-native-device-info";
+import qs from "query-string";
 
 
 
@@ -58,9 +59,9 @@ export default class CreateLobby extends Component {
     }
 
     togglePlaylistModal(data) {
-        this.setState({playlistModal: !this.state.playlistModal});
-        this.setState({playlists: data});
         this.setState({activePlaylist: data[0]});
+        this.setState({playlists: data});
+        this.setState({playlistModal: !this.state.playlistModal});
     }
 
     carouselRenderItem({item, index}) {
@@ -133,53 +134,31 @@ export default class CreateLobby extends Component {
 
                         {this.state.isConnectedToSpotify  && !this.state.playlistModal && <TouchableHighlight
                             onPress = {() => {
-                                // spotifySDKBridge.getPlaylists((error, result) => {
-                                //     if (error) {
-                                //         Alert.alert(error);
-                                //     } else {
-                                //         Alert.alert("Result...." + JSON.stringify(result));
-                                //         this.togglePlaylistModal(result);
-                                //         // socket.emit("getPlaylists", DeviceInfo.getUniqueId());
-                                //         // socket.on("gotPlaylists", (data) => {
-                                //         //     this.togglePlaylistModal(data);
-                                //         // });
-                                //     }
-                                // });
-                                spotifySDKBridge.getAccessToken( async (error, result) => {
+                                spotifySDKBridge.getAccessToken((error, result) => {
                                     if (error) {
                                         Alert.alert(error);
                                     } else {
-                                        // socket.emit("accessToken", {
-                                        //     uid: DeviceInfo.getUniqueId(),
-                                        //     access_token: result
-                                        // });
-
 
                                         const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_playlists";
 
-                                        try {
-                                            Alert.alert("getting playlists...");
-                                            let response = await fetch(url, {
-                                                method: "post",
-                                                headers: {
-                                                    "Content-Type": "application/json"
-                                                },
-                                                body: JSON.stringify({
-                                                    uid: DeviceInfo.getUniqueId(),
-                                                    access_token: result
-                                                })
-                                            });
-                                            Alert.alert("response::::" + response);
-                                            this.togglePlaylistModal(response);
-                                        } catch (error) {
+                                        fetch(url, {
+                                            method: "post",
+                                            headers: {
+                                                Accept: "application/json",
+                                                "Content-Type": "application/x-www-form-urlencoded"
+                                            },
+                                            body: qs.stringify({
+                                                "uid": DeviceInfo.getUniqueId(),
+                                                "access_token": result
+                                            }),
+                                        })
+                                        .then((response) => response.json())
+                                        .then((responseJson) => {
+                                            this.togglePlaylistModal(responseJson);
+                                        })
+                                        .catch((error) => {
                                             Alert.alert("Error while getting playlists: " + error);
-                                        }
-
-
-                                        // socket.on("gotPlaylists", (data) => {
-                                        //     this.togglePlaylistModal(data);
-                                        // });
-
+                                        });
                                     }
                                 });
                             }}

@@ -19,11 +19,6 @@ import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
 
-// global.socket = io("ec2-52-25-234-123.us-west-2.compute.amazonaws.com");
-// socket.emit("login", DeviceInfo.getUniqueId());
-// socket.on("successfulLogin", (data) => {
-//     Alert.alert(data);
-// });
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 
@@ -32,26 +27,6 @@ export default class Landing extends Component {
     constructor(props) {
         super(props);
         this.state = {text: ""};
-    }
-
-    componentDidMount() {
-        fetch("https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/test_data", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                info: DeviceInfo.getUniqueId()
-            })
-        })
-        .then((response) => response.json())
-        .then((responseJson) => {
-            Alert.alert("Test Data Response: " + responseJson);
-        })
-        .catch((error) => {
-            Alert.alert("Error on test_data: " + error);
-        });
     }
 
     render() {

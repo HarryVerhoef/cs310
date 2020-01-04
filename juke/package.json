@@ -8,6 +8,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "querystring": "^0.2.0",
     "react": "16.8.6",
     "react-native": "^0.60.4",
     "react-native-device-info": "^5.1.0",
