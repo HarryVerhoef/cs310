@@ -68,16 +68,8 @@ export default class CreateLobby extends Component {
         return (
             <View style={styles.playlistCard}>
                 <Image
-
                     style = {styles.playlistImage}
-                    source = {{
-                        uri: "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get-image",
-                        method: "POST",
-                        headers: {
-                            Pragma: "no-cache"
-                        },
-                        body: "spotify_url=" + item.images[0].url
-                    }}
+                    source = {{uri: item.images[0].url}}
                 />
             </View>
         );
