@@ -127,7 +127,7 @@ export default class HostLobby extends Component {
 
     render() {
         const {navigate} = this.props.navigation;
-        const params
+        const params;
         const uid = DeviceInfo.getUniqueId();
 
         onSelect = (id) => {
