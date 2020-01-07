@@ -75,8 +75,6 @@ export default class HostLobby extends Component {
 
     componentDidMount = () => {
 
-        this.setState({lobby: this.props.navigation.state.params.lobby});
-
         // this.setRecommendations()
         // .then((response) => {
         //     if (response.status == 200) { // OK
@@ -126,8 +124,7 @@ export default class HostLobby extends Component {
 
 
     render() {
-        const {navigate} = this.props.navigation;
-        const params;
+        const {navigation} = this.props;
         const uid = DeviceInfo.getUniqueId();
 
         onSelect = (id) => {
@@ -138,15 +135,12 @@ export default class HostLobby extends Component {
             }
         }
 
-        Alert.alert(this.props.navigation.state.params);
-
-
 
         return (
             <View style={styles.HostLobbyBody}>
 
                 <View style= {styles.HostLobbyHeader}>
-                    <Text>{this.state.lobby.name}: {this.state.lobby.key}</Text>
+                    <Text>{navigation.getParam("name","ERROR RETRIEVING LOBBY NAME")}: {navigation.getParam("key","ERROR RETRIEVING LOBBY KEY")}</Text>
                 </View>
 
                 <View style = {styles.TrackImageView}>

@@ -243,10 +243,10 @@ export default class CreateLobby extends Component {
                                     volume: this.state.volumeControl
                                 })
                             })
-                            .then((response) => {
-                                navigate("HostLobby", {
-                                    lobby: response
-                                });
+                            .then((response) => response.json())
+                            .then((responseJson) => {
+                                Alert.alert(responseJson);
+                                navigate("HostLobby", responseJson);
                             })
                             .catch((error) => {
                                 Alert.alert(error);
