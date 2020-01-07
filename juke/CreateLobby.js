@@ -222,6 +222,11 @@ export default class CreateLobby extends Component {
                     <TouchableHighlight
                         onPress = {() => {
 
+                            if (!this.state.lobbyName) {
+                                Alert.alert("Playlist must have a name");
+                                return;
+                            }
+
                             const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby";
                             fetch(url, {
                                 method: "POST",
@@ -232,14 +237,16 @@ export default class CreateLobby extends Component {
                                 body: qs.stringify({
                                     uid: DeviceInfo.getUniqueId(),
                                     name: this.state.lobbyName,
-                                    playlist: this.state.activePlaylist.id,
+                                    playlist_id: this.state.activePlaylist.id,
                                     chat: this.state.chatRoom,
                                     lyrics: this.state.lyrics,
                                     volume: this.state.volumeControl
                                 })
                             })
-                            .then(() => {
-                                navigate("HostLobby");
+                            .then((response) => {
+                                navigate("HostLobby", {
+                                    lobby: response
+                                });
                             })
                             .catch((error) => {
                                 Alert.alert(error);

@@ -18,7 +18,6 @@ import {
     FlatList
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
-import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
 
@@ -76,6 +75,8 @@ export default class HostLobby extends Component {
 
     componentDidMount = () => {
 
+        this.setState({lobby: this.props.navigation.state.params.lobby});
+
         // this.setRecommendations()
         // .then((response) => {
         //     if (response.status == 200) { // OK
@@ -119,11 +120,6 @@ export default class HostLobby extends Component {
         //     Alert.alert("ERROR");
         // });
 
-        socket.emit("set_recommendations", DeviceInfo.getUniqueId());
-        socket.on("recommendations_set", (tracks) => {
-            Alert.alert(tracks);
-            this.setState({recommendations: tracks});
-        });
 
     }
 
@@ -131,15 +127,8 @@ export default class HostLobby extends Component {
 
     render() {
         const {navigate} = this.props.navigation;
+        const params
         const uid = DeviceInfo.getUniqueId();
-
-
-        socket.emit("getLobbyInfo", uid);
-        socket.on("lobbyInfo", (data) => {
-            this.setState({lobby: data});
-            // Alert.alert(data);
-            // Alert.alert(this.state.tracks);
-        });
 
         onSelect = (id) => {
             if (this.state.selected[id]) {
@@ -148,6 +137,9 @@ export default class HostLobby extends Component {
                 this.state.selected[id] = true;
             }
         }
+
+        Alert.alert(this.props.navigation.state.params);
+
 
 
         return (

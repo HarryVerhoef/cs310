@@ -41,6 +41,7 @@ exports.handler = async (event, context, callback) => {
             UpdateExpression: "set access_token = :a spotify_user_id = :s",
             ExpressionAttributeValues: {
                 ":a": {"S": response.data.access_token},
+                ":s": {"S"}: spotify_id
             }
         }, (err, data) => {
             if (err) {
