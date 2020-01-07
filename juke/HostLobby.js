@@ -20,6 +20,7 @@ import {
 window.navigator.userAgent = 'react-native';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
+import qs from "query-string";
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
@@ -75,6 +76,26 @@ export default class HostLobby extends Component {
 
     componentDidMount = () => {
 
+        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: qs.stringify({
+                "uid": DeviceInfo.getUniqueId()
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            Alert.alert(responseJson);
+        })
+        .catch((error) => {
+            Alert.alert("ERROR: " + error);
+        });
+
         // this.setRecommendations()
         // .then((response) => {
         //     if (response.status == 200) { // OK
@@ -127,6 +148,17 @@ export default class HostLobby extends Component {
         const {navigation} = this.props;
         const uid = DeviceInfo.getUniqueId();
 
+        const lobbyInfo = {
+            name: navigation.getParam("name","ERROR RETRIEVING LOBBY NAME"),
+            key: navigation.getParam("key", "ERROR RETRIEVING LOBBY KEY"),
+            playlist_id: navigation.getParam("playlist_id","ERROR RETRIEVING PLAYLIST ID"),
+            chat: (navigation.getParam("chat","ERROR RETRIEVING CHAT STATUS") == "true"),
+            lyrics: (navigation.getParam("lyrics","ERROR RETRIEVING LYRICS STATUS") == "true"),
+            volume: (navigation.getParam("volume","ERROR RETRIEVING VOLUME STATUS") == "true")
+        }
+
+        Alert.alert(lobbyInfo);
+
         onSelect = (id) => {
             if (this.state.selected[id]) {
                 delete this.state.selected[id];
@@ -140,7 +172,7 @@ export default class HostLobby extends Component {
             <View style={styles.HostLobbyBody}>
 
                 <View style= {styles.HostLobbyHeader}>
-                    <Text>{navigation.getParam("name","ERROR RETRIEVING LOBBY NAME")}: {navigation.getParam("key","ERROR RETRIEVING LOBBY KEY")}</Text>
+                    <Text>{lobbyInfo.name}: {lobbyInfo.key}</Text>
                 </View>
 
                 <View style = {styles.TrackImageView}>
