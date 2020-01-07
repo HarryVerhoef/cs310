@@ -78,23 +78,32 @@ export default class HostLobby extends Component {
 
         const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
 
-        fetch(url, {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: qs.stringify({
-                "uid": DeviceInfo.getUniqueId()
-            })
-        })
-        .then((response) => response.json())
-        .then((responseJson) => {
-            Alert.alert(responseJson);
-        })
-        .catch((error) => {
-            Alert.alert("ERROR: " + error);
+        spotifySDKBridge.getAccessToken((error, result) => {
+            if (error) {
+                Alert.alert(error);
+            } else {
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: qs.stringify({
+                        "uid": DeviceInfo.getUniqueId(),
+                        "access_token": result
+                    })
+                })
+                .then((response) => response.json())
+                .then((responseJson) => {
+                    this.setState({recommendations: responseJson});
+                })
+                .catch((error) => {
+                    Alert.alert("ERROR: " + error);
+                });
+            }
         });
+
+
 
         // this.setRecommendations()
         // .then((response) => {
@@ -156,8 +165,6 @@ export default class HostLobby extends Component {
             lyrics: (navigation.getParam("lyrics","ERROR RETRIEVING LYRICS STATUS") == "true"),
             volume: (navigation.getParam("volume","ERROR RETRIEVING VOLUME STATUS") == "true")
         }
-
-        Alert.alert(lobbyInfo);
 
         onSelect = (id) => {
             if (this.state.selected[id]) {

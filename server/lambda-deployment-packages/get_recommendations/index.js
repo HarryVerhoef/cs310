@@ -5,75 +5,70 @@ const AWS = require("aws-sdk");
 const dynamo = new AWS.DynamoDB();
 
 exports.handler = async (event, context, callback) => {
-    console.log("POST /get_playlist");
+    console.log("POST /get_recommendations");
     console.log(event);
     const req = queryString.parse(event.body);
 
-    var spotify_id;
     var res;
 
-    // GET USER ID FROM ACCESS_TOKEN
+    /*
+    ** 1. Query the recommendations feature in Spotify API
+    ** 2. return result (res)
+    */
+
+    /* (1) Query the recommendations feature in Spotify API */
     try {
-        let user = await axios({
+
+        var seed_artists = [
+            "7EQ0qTo7fWT7DPxmxtSYEc",
+            "2IDLDx25HU1nQMKde4n61a"
+        ];
+
+        var seed_genres = [
+
+        ];
+
+        var seed_tracks = [
+            "0cRvK1mcG6zmaD04D6PAnb"
+        ];
+
+        var body = {
+            limit: 5,
+            seed_artists: seed_artists,
+            seed_genres: seed_genres,
+            seed_tracks: seed_tracks
+        };
+
+        let recommendations = await axios({
             method: "get",
-            url: "https://api.spotify.com/v1/me",
+            url: "https://api.spotify.com/v1/recommendations?" + queryString.stringify(body),
             headers: {
                 "Authorization": "Bearer " + req.access_token
             }
         });
 
-
-        spotify_id = user.data.id;
-
-        // PUT ITEM IN DynamoDB
-        dynamo.putItem({
-            TableName: "device",
-            Item: {
-                "device_id": {"S": req.uid},
-                "spotify_user_id": {"S": spotify_id},
-                "access_token": {"S": req.access_token}
-            }
-        }, (err, data) => {
-            if (err) {
-                res = {
-                    statusCode: 500,
-                    body: JSON.stringify({
-                        data: err
-                    })
-                };
-                console.log(res);
-                return res;
-            } else {
-                console.log("UPDATED ITEM: " + data);
-            }
-        });
-
-        let playlists = await axios({
-            method: "get",
-            url: "https://api.spotify.com/v1/users/" + spotify_id + "/playlists",
-            headers: {
-                "Authorization": "Bearer " + req.access_token
-            }
-        });
+        /* (2) Return response (res) */
 
         res = {
             statusCode: 200,
-            body: JSON.stringify(playlists.data.items)
+            body: JSON.stringify(recommendations.data.tracks)
         };
 
         console.log(res);
 
         return res;
+
 
     } catch (error) {
-        console.log("ERROR" + error);
+
         res = {
             statusCode: 500,
-            body: JSON.stringify({
-                data: error
-            })
+            body: JSON.stringify(error)
         };
+
         console.log(res);
+
         return res;
+
     }
 };

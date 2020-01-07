@@ -245,7 +245,6 @@ export default class CreateLobby extends Component {
                             })
                             .then((response) => response.json())
                             .then((responseJson) => {
-                                Alert.alert(responseJson);
                                 navigate("HostLobby", responseJson);
                             })
                             .catch((error) => {
