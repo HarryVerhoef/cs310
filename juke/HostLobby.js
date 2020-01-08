@@ -26,6 +26,15 @@ var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 
 function Recommendation({id, title, selected, artists, onSelect}) {
+
+    var newArr = artists.map(function(val, index) {
+        return val.name;
+    });
+
+    Alert.alert(newArr);
+
+    var artistString = newArr.join(", ");
+
     return (
         <TouchableOpacity
             onPress = {() => onSelect(id)}
@@ -35,7 +44,7 @@ function Recommendation({id, title, selected, artists, onSelect}) {
             ]}
         >
             <Text style = {styles.recommendationTitle}>{title}</Text>
-            <Text style = {styles.recommendationArtists}>{artists}</Text>
+            <Text style = {styles.recommendationArtists}>{artistString}</Text>
 
         </TouchableOpacity>
     );
@@ -153,6 +162,9 @@ export default class HostLobby extends Component {
 
 
 
+
+
+
     render() {
         const {navigation} = this.props;
         const uid = DeviceInfo.getUniqueId();
@@ -166,13 +178,11 @@ export default class HostLobby extends Component {
             volume: (navigation.getParam("volume","ERROR RETRIEVING VOLUME STATUS") == "true")
         }
 
-        onSelect = (id) => {
-            if (this.state.selected[id]) {
-                delete this.state.selected[id];
-            } else {
-                this.state.selected[id] = true;
-            }
+        onSelect = (id, url) => {
+
         }
+
+
 
 
         return (
@@ -183,16 +193,9 @@ export default class HostLobby extends Component {
                 </View>
 
                 <View style = {styles.TrackImageView}>
-                    {typeof this.state.lobby.playlists != "undefined" && <Image
+                    {this.state.activeSongURL && <Image
                         style = {styles.playlistImage}
-                        source = {{
-                            uri: "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get-image",
-                            method: "POST",
-                            headers: {
-                                Pragma: "no-cache"
-                            },
-                            body: this.state.lobby.playlist.images[0]
-                        }}
+                        source = {{uri: this.state.activeSongURL}}
                     />}
                 </View>
 
@@ -207,9 +210,22 @@ export default class HostLobby extends Component {
                             <Recommendation
                                 id = {item.id}
                                 title = {item.name}
-                                artists = {item.artists.join()}
+                                artists = {item.artists}
                                 selected={this.state.selected[item.id] ? true : false}
-                                onSelect={onSelect(item.id)}
+                                onSelect={() => {
+                                    /* @TODO: Need to implement semaphore in play method */
+                                    spotifySDKBridge.play(item.id, (error, result) => {
+                                        if (error) {
+                                            Alert.alert("error" + error);
+                                        } else {
+                                            Alert.alert("result" + result);
+                                        }
+                                        this.setState({
+                                            activeSongID: item.id,
+                                            activeSongURL: item.album.images[0].url
+                                        });
+                                    });
+                                }}
                             />
                         )}
                         keyExtractor = {item => item.id}
