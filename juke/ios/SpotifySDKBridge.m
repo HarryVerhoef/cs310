@@ -51,10 +51,8 @@ RCT_EXPORT_METHOD(getPlaylists:(RCTResponseSenderBlock)jsCallback) {
 }
 
 RCT_EXPORT_METHOD(play:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallback) {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSNumber *result = [NSNumber numberWithBool:[self.appDelegate playURI:uri]];
-    jsCallback(@[[NSNull null], result]);
-  });
+  NSNumber *result = [NSNumber numberWithBool:[self.appDelegate playURI:uri]];
+  jsCallback(@[[NSNull null], result]);
 }
 
 RCT_EXPORT_METHOD(skip:(RCTResponseSenderBlock)jsCallback) {

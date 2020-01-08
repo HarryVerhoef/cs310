@@ -214,7 +214,7 @@ export default class HostLobby extends Component {
                                 selected={this.state.selected[item.id] ? true : false}
                                 onSelect={() => {
                                     /* @TODO: Need to implement semaphore in play method */
-                                    spotifySDKBridge.play(item.id, (error, result) => {
+                                    spotifySDKBridge.play("spotify:track:" + item.id, (error, result) => {
                                         if (error) {
                                             Alert.alert("error" + error);
                                         } else {
