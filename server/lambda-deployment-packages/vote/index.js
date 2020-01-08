@@ -1,75 +1,90 @@
-exports.handler = async (event) => {
-    "use static";
-    const queryString = require("querystring");
-    const AWS = require("aws-sdk");
-    const dynamo = new AWS.DynamoDB();
-    const crypto = require("crypto");
+"use static";
+const queryString = require("querystring");
+const AWS = require("aws-sdk");
+const dynamo = new AWS.DynamoDB();
 
+exports.handler = async (event) => {
     const req = queryString.parse(event.body);
     var res;
 
     /*
-    ** 1. Generate lobby key
-    ** 2. Put lobby item in to lobby table
-    ** 3. Update device item with new lobby key
-    ** 4. Return res
+    ** 1. Get lobby key from device table
+    ** 2. Update lobby-track item with vote
+    ** 3. Create lobby-wide vote object
+    ** 4. return the current state of votes
+    **
     */
 
-    /* (1) Generate lobby key */
-    const roomKey = crypto.randomBytes(2).toString("hex");
+    /*
+    ** Return vote object format:
+    ** {
+    ** . track_id: <num_votes>,
+    **   ...
+    ** }
+    */
+    try {
 
-    /* (2) Put item in to DynamoDB */
-    dynamo.putItem({
-        TableName: "lobby",
-        Item: {
-            "lobby_key": {"S": roomKey},
-            "playlist_id": {"S": req.playlist_id},
-            "chat": {"BOOL": req.chat},
-            "lyrics": {"BOOL": req.lyrics},
-            "volume": {"BOOL": req.volume}
-        }
-    }, (err, data) => {
-        if (err) {
-            res = {
-                statusCode: 500,
-                body: JSON.stringify({
-                    data: err
-                })
-            };
-            console.log(res);
-            return res;
-        } else {
-            console.log("PUT ITEM: " + data);
-        }
-    });
+        /* (1) Get lobby key from device table */
+        let lobby_key_res = await dynamo.getItem({
+            TableName: "device",
+            Key: {
+                "device_id": {"S": req.uid}
+            },
+            AttributesToGet: ["lobby_key"],
+        }).promise();
 
-    /* (3) Update device item with new lobby key */
-    dynamo.updateItem({
-        TableName: "device",
-        Key: {
-            "device_id": {"S": req.uid}
-        },
-        UpdateExpression: "set lobby_key = :l",
-        ExpressionAttributeValues: {
-            ":l": {"S": roomKey}
-        }
-    }, (err, data) => {
-        if (err) {
-            res = {
-                statusCode: 500,
-                body: JSON.stringify({
-                    data: err
-                })
-            };
-            console.log(res);
-        } else {
-            console.log("UPDATED ITEM: " + data);
-        }
-    });
 
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(roomKey),
-    };
-    return response;
+
+        let lobby_key = lobby_key_res.Item.lobby_key.S;
+
+        console.log(lobby_key);
+
+        /* (2) Update lobby-track item with vote */
+        let vote_no_res = await dynamo.updateItem({
+            TableName: "lobby-track",
+            Key: {
+                "lobby_key": {"S": lobby_key},
+                "track_id": {"S": req.track_id}
+            },
+            UpdateExpression: "ADD vote_no :i",
+            ExpressionAttributeValues: {
+                ":i": {"N": "1"}
+            },
+            ReturnValues: "UPDATED_NEW"
+        }).promise();
+
+        let vote_no = vote_no_res.Attributes.vote_no.N;
+
+        console.log("vote_no: " + vote_no);
+
+        /* (3) Create lobby-wide vote object */
+        let vote_array_res = await dynamo.query({
+            TableName: "lobby-track",
+            ProjectionExpression: "track_id, vote_no",
+            KeyConditionExpression: "lobby_key = :lk",
+            ExpressionAttributeValues: {
+                ":lk": {"S": lobby_key}
+            }
+        }).promise();
+
+        let vote_array = vote_array_res.Items;
+
+        res = {
+            statusCode: 200,
+            body: JSON.stringify(vote_array)
+        };
+
+        console.log(res);
+        return res;
+
+    } catch(error) {
+        console.log(error);
+        res = {
+            statusCode: 500,
+            body: error
+        };
+
+        console.log(res);
+        return res;
+    }
 };
