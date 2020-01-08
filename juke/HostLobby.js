@@ -25,15 +25,16 @@ import qs from "query-string";
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 
-function Recommendation({id, title, selected, artists, onSelect}) {
-
+function getArtistString(artists) {
     var newArr = artists.map(function(val, index) {
         return val.name;
     });
 
-    Alert.alert(newArr);
+    return newArr.join(", ");
+}
 
-    var artistString = newArr.join(", ");
+
+function Recommendation({id, title, selected, artists, onSelect}) {
 
     return (
         <TouchableOpacity
@@ -44,7 +45,7 @@ function Recommendation({id, title, selected, artists, onSelect}) {
             ]}
         >
             <Text style = {styles.recommendationTitle}>{title}</Text>
-            <Text style = {styles.recommendationArtists}>{artistString}</Text>
+            <Text style = {styles.recommendationArtists}>{getArtistString(artists)}</Text>
 
         </TouchableOpacity>
     );
@@ -79,7 +80,13 @@ export default class HostLobby extends Component {
         this.state = {
             recommendations: [],
             lobby: {},
-            selected: {}
+            selected: {},
+            activeSong: {
+                isSet: false,
+                name: "<SongName>",
+                uri: "",
+                artists: "<Artists>"
+            }
         }
     }
 
@@ -111,59 +118,7 @@ export default class HostLobby extends Component {
                 });
             }
         });
-
-
-
-        // this.setRecommendations()
-        // .then((response) => {
-        //     if (response.status == 200) { // OK
-        //         Alert.alert("holla");
-        //         socket.emit("getRecommendations", DeviceInfo.getUniqueId());
-        //         socket.on("recommendations", (tracks) => {
-        //             Alert.alert(tracks);
-        //             this.setState({recommendations: tracks});
-        //         });
-        //     } else if (response.status == 500) { // Internal server error
-        //         Alert.alert("Sorry, there was an internal server error when requestin lobby recommendations.");
-        //     } else {
-        //         Alert.alert("Unknown error when retrieving lobby recommendations.")
-        //     }
-        // })
-        // .catch((error) => {
-        //     Alert.alert(error.message);
-        // });
-
-
-        // const url = "http://harrys-macbook-pro.local:8081/get_recommendations";
-        //
-        // fetch(url, {
-        //     method: "post",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify({
-        //         uid: DeviceInfo.getUniqueId()
-        //     })
-        // })
-        // .then(() => {
-        //     Alert.alert("holla");
-        //     socket.emit("getRecommendations", DeviceInfo.getUniqueId());
-        //     socket.on("recommendations", (tracks) => {
-        //         Alert.alert(tracks);
-        //         this.setState({recommendations: tracks});
-        //     });
-        // })
-        // .catch((error) => {
-        //     Alert.alert("ERROR");
-        // });
-
-
     }
-
-
-
-
-
 
     render() {
         const {navigation} = this.props;
@@ -178,13 +133,6 @@ export default class HostLobby extends Component {
             volume: (navigation.getParam("volume","ERROR RETRIEVING VOLUME STATUS") == "true")
         }
 
-        onSelect = (id, url) => {
-
-        }
-
-
-
-
         return (
             <View style={styles.HostLobbyBody}>
 
@@ -193,14 +141,14 @@ export default class HostLobby extends Component {
                 </View>
 
                 <View style = {styles.TrackImageView}>
-                    {this.state.activeSongURL && <Image
+                    {this.state.activeSong.isSet && <Image
                         style = {styles.playlistImage}
-                        source = {{uri: this.state.activeSongURL}}
+                        source = {{uri: this.state.activeSong.uri}}
                     />}
                 </View>
 
                 <View style = {styles.SongInfo}>
-                    <Text>Song Name - Artist (thumbs-up) (thumbs-down)</Text>
+                    <Text>{this.state.activeSong.name} - {this.state.activeSong.artists} (thumbs-up) (thumbs-down)</Text>
                 </View>
 
                 <View style = {styles.Recommendations}>
@@ -213,17 +161,22 @@ export default class HostLobby extends Component {
                                 artists = {item.artists}
                                 selected={this.state.selected[item.id] ? true : false}
                                 onSelect={() => {
-                                    /* @TODO: Need to implement semaphore in play method */
                                     spotifySDKBridge.play("spotify:track:" + item.id, (error, result) => {
                                         if (error) {
                                             Alert.alert("error" + error);
-                                        } else {
-                                            Alert.alert("result" + result);
                                         }
+
                                         this.setState({
-                                            activeSongID: item.id,
-                                            activeSongURL: item.album.images[0].url
+                                            activeSong: {
+                                                isSet: true,
+                                                name: item.name,
+                                                uri: item.album.images[0].url,
+                                                artists: getArtistString(item.artists)
+                                            }
                                         });
+
+                                        Alert.alert(this.state.activeSong);
+
                                     });
                                 }}
                             />
@@ -263,5 +216,10 @@ const styles = StyleSheet.create({
     Recommendations: {
         flex: 3,
         backgroundColor: "#cccccc"
+    },
+
+    playlistImage: {
+        width: 200,
+        height: 200
     }
 });
