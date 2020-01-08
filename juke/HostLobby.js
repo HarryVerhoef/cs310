@@ -161,6 +161,31 @@ export default class HostLobby extends Component {
                                 artists = {item.artists}
                                 selected={this.state.selected[item.id] ? true : false}
                                 onSelect={() => {
+
+                                    const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/vote";
+
+                                    fetch(url, {
+                                        method: "POST",
+                                        headers: {
+                                            Accept: "application/json",
+                                            "Content-Type": "application/x-www-form-urlencoded"
+                                        },
+                                        body: {
+                                            qs.stringify({
+                                                uid: DeviceInfo.getUniqueId(),
+                                                track_id: item.id
+                                            })
+                                        }
+                                    })
+                                    .then((response) => response.json())
+                                    .then((responseJson) => {
+                                        Alert.alert("response: " + responseJson);
+                                    })
+                                    .catch((error) => {
+                                        Alert.alert("Error voting for track: " + error);
+                                    });
+
+
                                     spotifySDKBridge.play("spotify:track:" + item.id, (error, result) => {
                                         if (error) {
                                             Alert.alert("error" + error);

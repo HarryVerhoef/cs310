@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf vote.zip
+zip -r vote.zip . -x "zip"
