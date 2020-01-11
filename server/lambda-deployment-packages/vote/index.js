@@ -3,9 +3,14 @@ const queryString = require("querystring");
 const AWS = require("aws-sdk");
 const dynamo = new AWS.DynamoDB();
 
-exports.handler = async (event) => {
-    const req = queryString.parse(event.body);
+// WebSocket Function
+
+exports.handler = async (event, context, callback) => {
+    const req = JSON.parse(event.body);
+    console.log(req);
     var res;
+
+    // console.log(event);
 
     /*
     ** 1. Get lobby key from device table
@@ -75,6 +80,9 @@ exports.handler = async (event) => {
         };
 
         console.log(res);
+
+        // callback(null, res);
+
         return res;
 
     } catch(error) {
@@ -85,6 +93,9 @@ exports.handler = async (event) => {
         };
 
         console.log(res);
+        // callback(null, res);
+
+
         return res;
     }
 };

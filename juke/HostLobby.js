@@ -25,6 +25,8 @@ import qs from "query-string";
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 
+
+
 function getArtistString(artists) {
     var newArr = artists.map(function(val, index) {
         return val.name;
@@ -34,7 +36,7 @@ function getArtistString(artists) {
 }
 
 
-function Recommendation({id, title, selected, artists, onSelect}) {
+function Recommendation({id, title, selected, artists, onSelect, votes}) {
 
     return (
         <TouchableOpacity
@@ -44,14 +46,22 @@ function Recommendation({id, title, selected, artists, onSelect}) {
                 {backgroundColor: selected ? "#6e3b6e" : "#f9c2ff"}
             ]}
         >
-            <Text style = {styles.recommendationTitle}>{title}</Text>
-            <Text style = {styles.recommendationArtists}>{getArtistString(artists)}</Text>
+            <View style = {styles.songInfoView}>
+                <Text style = {styles.recommendationTitle}>{title}</Text>
+                <Text style = {styles.recommendationArtists}>{getArtistString(artists)}</Text>
+            </View>
+
+            <View style = {styles.voteInfoView}>
+                <Text>{(votes) ? votes[id] : "0"}</Text>
+            </View>
 
         </TouchableOpacity>
     );
 }
 
 export default class HostLobby extends Component {
+
+    ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
 
 
     async setRecommendations() {
@@ -86,11 +96,44 @@ export default class HostLobby extends Component {
                 name: "<SongName>",
                 uri: "",
                 artists: "<Artists>"
-            }
+            },
+            votes: {}
         }
     }
 
     componentDidMount = () => {
+
+        this.ws.onopen = () => {
+            Alert.alert("Connected");
+
+            // this.ws.send(JSON.stringify({
+            //     action: "vote",
+            //     data: {
+            //         test1: "hello",
+            //         test2: "hello2"
+            //     }
+            // }));
+        };
+
+        this.ws.onmessage = (evt) => {
+            // Received a message from lambda, probably a vote message
+            var votes = JSON.parse(evt.data);
+            // this.state.recommendations.forEach((item) => {})
+            newVotes = this.state.votes;
+            votes.forEach(item => {
+                newVotes[item.track_id.S] = item.vote_no.N;
+            });
+            Alert.alert("newVotes: " + JSON.stringify(newVotes));
+            this.setState({votes: newVotes});
+        };
+
+        this.ws.onclose = () => {
+            // Disconnected, attempt to reconnect
+            Alert.alert("Disconnected from WebSocket API... Attempting to reconnect");
+            ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
+        }
+
+
 
         const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
 
@@ -154,36 +197,16 @@ export default class HostLobby extends Component {
                 <View style = {styles.Recommendations}>
                     <FlatList
                         data = {this.state.recommendations}
+                        extraData = {this.state}
                         renderItem = {({item}) => (
-                            <Recommendation
-                                id = {item.id}
-                                title = {item.name}
-                                artists = {item.artists}
-                                selected={this.state.selected[item.id] ? true : false}
-                                onSelect={() => {
-
-                                    const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/vote";
-
-                                    fetch(url, {
-                                        method: "POST",
-                                        headers: {
-                                            Accept: "application/json",
-                                            "Content-Type": "application/x-www-form-urlencoded"
-                                        },
-                                        body: {
-                                            qs.stringify({
-                                                uid: DeviceInfo.getUniqueId(),
-                                                track_id: item.id
-                                            })
-                                        }
-                                    })
-                                    .then((response) => response.json())
-                                    .then((responseJson) => {
-                                        Alert.alert("response: " + responseJson);
-                                    })
-                                    .catch((error) => {
-                                        Alert.alert("Error voting for track: " + error);
-                                    });
+                            <TouchableOpacity
+                                onPress = {() => {
+                                    // onPress
+                                    this.ws.send(JSON.stringify({
+                                        action: "vote",
+                                        uid: DeviceInfo.getUniqueId(),
+                                        track_id: item.id
+                                    }));
 
 
                                     spotifySDKBridge.play("spotify:track:" + item.id, (error, result) => {
@@ -204,9 +227,23 @@ export default class HostLobby extends Component {
 
                                     });
                                 }}
-                            />
+                                style = {[
+                                    styles.recommendation
+                                ]}
+                            >
+                                <View style = {styles.songInfoView}>
+                                    <Text style = {styles.recommendationTitle}>{item.title}</Text>
+                                    <Text style = {styles.recommendationArtists}>{getArtistString(item.artists)}</Text>
+                                </View>
+
+                                <View style = {styles.voteInfoView}>
+                                    <Text>{(this.state.votes[item.id]) ? this.state.votes[item.id] : "0"}</Text>
+                                </View>
+
+                            </TouchableOpacity>
                         )}
                         keyExtractor = {item => item.id}
+
                     />
                 </View>
 
