@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf delete_lobby.zip
+zip -r delete_lobby.zip . -x "zip"

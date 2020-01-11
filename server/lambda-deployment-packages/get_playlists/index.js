@@ -7,13 +7,24 @@ const dynamo = new AWS.DynamoDB();
 exports.handler = async (event, context, callback) => {
     console.log("POST /get_playlist");
     console.log(event);
-    const req = queryString.parse(event.body);
 
+    const req = queryString.parse(event.body);
     var spotify_id;
     var res;
 
-    // GET USER ID FROM ACCESS_TOKEN
+
+    /*
+    ** 1. Get spotify user id from Spotify API
+    ** 2. Put Item in DynamoDB (Replaces any other occurence with same key)
+    ** 3. Get user's owned playlists from Spotify API
+    ** 4. Return playlists as stringified JSON
+    */
+
+
+    /* (1) Get spotify user id from Spotify API */
+
     try {
+
         let user = await axios({
             method: "get",
             url: "https://api.spotify.com/v1/me",
@@ -22,10 +33,10 @@ exports.handler = async (event, context, callback) => {
             }
         });
 
-
         spotify_id = user.data.id;
 
-        // PUT ITEM IN DynamoDB
+        /* (2) Put Item in DynamoDB (Replaces any other occurence with same key) */
+
         dynamo.putItem({
             TableName: "device",
             Item: {
@@ -48,6 +59,8 @@ exports.handler = async (event, context, callback) => {
             }
         });
 
+        /* (3) Get user's owned playlists from Spotify API */
+
         let playlists = await axios({
             method: "get",
             url: "https://api.spotify.com/v1/users/" + spotify_id + "/playlists",
@@ -56,23 +69,25 @@ exports.handler = async (event, context, callback) => {
             }
         });
 
+        /* (4) Return playlists as stringified JSON */
+
         res = {
             statusCode: 200,
             body: JSON.stringify(playlists.data.items)
         };
 
         console.log(res);
-
         return res;
 
     } catch (error) {
-        console.log("ERROR" + error);
+
         res = {
             statusCode: 500,
             body: JSON.stringify({
                 data: error
             })
         };
+
         console.log(res);
         return res;
     }

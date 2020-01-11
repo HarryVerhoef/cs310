@@ -170,26 +170,22 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
   self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
   
-  if (@available(iOS 11, *)) {
-      // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
-      [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
-  } else {
-      // Use this on iOS versions < 11 to use SFSafariViewController
-      [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
-  }
   
-//  if ([self.appRemote authorizeAndPlayURI:@""]) {
-//    //Spotify app is ready for authorisation
-//    if (@available(iOS 11, *)) {
-//        // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
-//        [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
-//    } else {
-//        // Use this on iOS versions < 11 to use SFSafariViewController
-//        [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
-//    }
-//  } else {
-//    NSLog(@"Failed at authorizaAndPlayURI");
-//  }
+  
+  
+  
+  if (self.sessionManager.session.isExpired) {
+    NSLog(@"Renewing the session");
+    [self.sessionManager renewSession];
+  } else {
+    if (@available(iOS 11, *)) {
+        // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
+        [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
+    } else {
+        // Use this on iOS versions < 11 to use SFSafariViewController
+        [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
+    }
+  }
   
   return self.appRemote.isConnected;
   

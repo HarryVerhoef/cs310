@@ -63,28 +63,6 @@ export default class HostLobby extends Component {
 
     ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
 
-
-    async setRecommendations() {
-
-
-        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
-
-        Alert.alert("getRecommendations");
-        let response = await fetch(url, {
-            method: "post",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                uid: DeviceInfo.getUniqueId()
-            })
-        });
-        // let res = await response.json();
-        // this.setState({recommendations: res});
-        Alert.alert(response);
-        return response;
-    }
-
     constructor(props) {
         super(props);
         this.state = {
@@ -97,22 +75,36 @@ export default class HostLobby extends Component {
                 uri: "",
                 artists: "<Artists>"
             },
+            voteEnabled: false,
             votes: {}
         }
+    }
+
+    play(id, name, img_url, artists, callback) {
+        spotifySDKBridge.play("spotify:track:" + id, (error, result) => {
+
+            if (error) {
+                Alert.alert("error" + error);
+            } else {
+                this.setState({
+                    activeSong: {
+                        isSet: true,
+                        name: name,
+                        uri: img_url,
+                        artists: getArtistString(artists)
+                    }
+                });
+            }
+
+            callback();
+
+        });
     }
 
     componentDidMount = () => {
 
         this.ws.onopen = () => {
-            Alert.alert("Connected");
-
-            // this.ws.send(JSON.stringify({
-            //     action: "vote",
-            //     data: {
-            //         test1: "hello",
-            //         test2: "hello2"
-            //     }
-            // }));
+            this.setState({voteEnabled: true});
         };
 
         this.ws.onmessage = (evt) => {
@@ -129,9 +121,12 @@ export default class HostLobby extends Component {
 
         this.ws.onclose = () => {
             // Disconnected, attempt to reconnect
-            Alert.alert("Disconnected from WebSocket API... Attempting to reconnect");
-            ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
+            Alert.alert("Disconnected from Websocket API.");
+
+
         }
+
+
 
 
 
@@ -160,6 +155,29 @@ export default class HostLobby extends Component {
                     Alert.alert("ERROR: " + error);
                 });
             }
+        });
+    }
+
+    componentWillUnmount() {
+
+        /* Called when react-navigation pops HostLobby component off of navigation stack */
+
+        /* Send HTTP request to delete current lobby from DynamoDB */
+
+        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/delete_lobby";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: qs.stringify({
+                uid: DeviceInfo.getUniqueId()
+            })
+        })
+        .catch((error) => {
+            Alert.alert("Error unmounting HostLobby component: " + error);
         });
     }
 
@@ -195,37 +213,17 @@ export default class HostLobby extends Component {
                 </View>
 
                 <View style = {styles.Recommendations}>
-                    <FlatList
+                    {this.state.voteEnabled && <FlatList
                         data = {this.state.recommendations}
                         extraData = {this.state}
                         renderItem = {({item}) => (
                             <TouchableOpacity
                                 onPress = {() => {
-                                    // onPress
                                     this.ws.send(JSON.stringify({
                                         action: "vote",
                                         uid: DeviceInfo.getUniqueId(),
                                         track_id: item.id
                                     }));
-
-
-                                    spotifySDKBridge.play("spotify:track:" + item.id, (error, result) => {
-                                        if (error) {
-                                            Alert.alert("error" + error);
-                                        }
-
-                                        this.setState({
-                                            activeSong: {
-                                                isSet: true,
-                                                name: item.name,
-                                                uri: item.album.images[0].url,
-                                                artists: getArtistString(item.artists)
-                                            }
-                                        });
-
-                                        Alert.alert(this.state.activeSong);
-
-                                    });
                                 }}
                                 style = {[
                                     styles.recommendation
@@ -244,7 +242,7 @@ export default class HostLobby extends Component {
                         )}
                         keyExtractor = {item => item.id}
 
-                    />
+                    />}
                 </View>
 
             </View>
