@@ -18,7 +18,6 @@ exports.handler = async (event) => {
     /* (1) Get lobby_key from device table */
 
     try {
-        //
 
         let lobby_key_res = await dynamo.getItem({
             TableName: "device",

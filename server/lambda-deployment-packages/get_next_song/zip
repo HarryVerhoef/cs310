@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf get_next_song.zip
+zip -r get_next_song.zip . -x "zip"

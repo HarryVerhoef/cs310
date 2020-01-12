@@ -73,14 +73,45 @@ export default class HostLobby extends Component {
                 isSet: false,
                 name: "<SongName>",
                 uri: "",
-                artists: "<Artists>"
+                artists: "<Artists>",
+                length: 100000
             },
             voteEnabled: false,
             votes: {}
         }
     }
 
-    play(id, name, img_url, artists, callback) {
+    endVoting() {
+
+        /* Disable the voting for this song */
+        this.setState({voteEnabled: false});
+
+        /* Fetch final vote numbers from lambda */
+
+        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_next_song";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: qs.stringify({
+                uid: DeviceInfo.getUniqueId()
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            // Handle final vote response
+            Alert.alert(responseJson);
+        })
+        catch((error) => {
+            Alert.alert("ERROR " + error);
+        });
+        
+    }
+
+    play(id, name, img_url, artists, length, callback) {
         spotifySDKBridge.play("spotify:track:" + id, (error, result) => {
 
             if (error) {
@@ -91,9 +122,14 @@ export default class HostLobby extends Component {
                         isSet: true,
                         name: name,
                         uri: img_url,
-                        artists: getArtistString(artists)
+                        artists: getArtistString(artists),
+                        length: length
                     }
                 });
+
+                /* Set timer to last 90% of the currently playing track */
+                this.timer = setInterval(() => this.endVoting(), 0.9 * length);
+
             }
 
             callback();
@@ -115,20 +151,13 @@ export default class HostLobby extends Component {
             votes.forEach(item => {
                 newVotes[item.track_id.S] = item.vote_no.N;
             });
-            Alert.alert("newVotes: " + JSON.stringify(newVotes));
+
             this.setState({votes: newVotes});
         };
 
         this.ws.onclose = () => {
-            // Disconnected, attempt to reconnect
             Alert.alert("Disconnected from Websocket API.");
-
-
         }
-
-
-
-
 
         const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
 
@@ -219,11 +248,16 @@ export default class HostLobby extends Component {
                         renderItem = {({item}) => (
                             <TouchableOpacity
                                 onPress = {() => {
-                                    this.ws.send(JSON.stringify({
-                                        action: "vote",
-                                        uid: DeviceInfo.getUniqueId(),
-                                        track_id: item.id
-                                    }));
+
+                                    if (!this.activeSong.isSet) {
+                                        this.play(item.id, item.album.images[0].url, item.artists, item.duration_ms)
+                                    } else {
+                                        this.ws.send(JSON.stringify({
+                                            action: "vote",
+                                            uid: DeviceInfo.getUniqueId(),
+                                            track_id: item.id
+                                        }));
+                                    }
                                 }}
                                 style = {[
                                     styles.recommendation
