@@ -104,14 +104,29 @@ export default class HostLobby extends Component {
         .then((responseJson) => {
             // Handle final vote response
             Alert.alert(responseJson);
+
+            var max = -1;
+
+
         })
-        catch((error) => {
+        .catch((error) => {
             Alert.alert("ERROR " + error);
         });
-        
+
     }
 
     play(id, name, img_url, artists, length, callback) {
+
+        var activeSong = {
+            isSet: true,
+            name: name,
+            uri: img_url,
+            artists: artists,
+            length: length
+        };
+
+        Alert.alert("active song: " + JSON.stringify(activeSong));
+
         spotifySDKBridge.play("spotify:track:" + id, (error, result) => {
 
             if (error) {
@@ -122,17 +137,21 @@ export default class HostLobby extends Component {
                         isSet: true,
                         name: name,
                         uri: img_url,
-                        artists: getArtistString(artists),
+                        artists: artists,
                         length: length
                     }
                 });
+
+                // Alert.alert("length: " + length);
 
                 /* Set timer to last 90% of the currently playing track */
                 this.timer = setInterval(() => this.endVoting(), 0.9 * length);
 
             }
 
-            callback();
+            if (callback) {
+                callback();
+            }
 
         });
     }
@@ -249,8 +268,9 @@ export default class HostLobby extends Component {
                             <TouchableOpacity
                                 onPress = {() => {
 
-                                    if (!this.activeSong.isSet) {
-                                        this.play(item.id, item.album.images[0].url, item.artists, item.duration_ms)
+                                    if (!this.state.activeSong.isSet) {
+                                        Alert.alert(item.duration_ms);
+                                        this.play(item.id, item.name, item.album.images[0].url, getArtistString(item.artists), item.duration_ms)
                                     } else {
                                         this.ws.send(JSON.stringify({
                                             action: "vote",
