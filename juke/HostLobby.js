@@ -17,6 +17,7 @@ import {
     Image,
     FlatList
     } from 'react-native';
+import ProgressBar from "./ProgressBar.js";
 window.navigator.userAgent = 'react-native';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
@@ -258,6 +259,15 @@ export default class HostLobby extends Component {
 
                 <View style = {styles.SongInfo}>
                     <Text>{this.state.activeSong.name} - {this.state.activeSong.artists} (thumbs-up) (thumbs-down)</Text>
+                    <ProgressBar
+                        time = {this.state.activeSong.length}
+                        factor = {500}
+                        length = {300}
+                        height = {10}
+                        barColor = {"#ffffff"}
+                        progressColor = {"#cc5555"}
+                    >
+                    </ProgressBar>
                 </View>
 
                 <View style = {styles.Recommendations}>
