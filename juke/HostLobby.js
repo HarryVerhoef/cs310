@@ -18,6 +18,7 @@ import {
     FlatList
     } from 'react-native';
 import ProgressBar from "./ProgressBar.js";
+import TouchableTrack from "./TouchableTrack";
 window.navigator.userAgent = 'react-native';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
@@ -104,9 +105,22 @@ export default class HostLobby extends Component {
         .then((response) => response.json())
         .then((responseJson) => {
             // Handle final vote response
-            Alert.alert(responseJson);
+            // Alert.alert(responseJson);
 
             var max = -1;
+            var nextSong = "";
+
+            responseJson.forEach((item) => {
+                if (item.vote_no.N > max) {
+                    max = item.vote_no.N;
+                    nextSong = item.track_id.S;
+                }
+            });
+
+            Alert.alert("Next Song: " + nextSong + ", vote_no: " + max);
+
+            // play(id, name, img_url, artists, length, callback)
+            // this.play(nextSong)
 
 
         })
@@ -146,7 +160,7 @@ export default class HostLobby extends Component {
                 // Alert.alert("length: " + length);
 
                 /* Set timer to last 90% of the currently playing track */
-                this.timer = setInterval(() => this.endVoting(), 0.9 * length);
+                this.timer = setInterval(() => this.endVoting(), 0.1 * length);
 
             }
 
@@ -168,7 +182,7 @@ export default class HostLobby extends Component {
             var votes = JSON.parse(evt.data);
             // this.state.recommendations.forEach((item) => {})
             newVotes = this.state.votes;
-            votes.forEach(item => {
+            votes.forEach((item) => {
                 newVotes[item.track_id.S] = item.vote_no.N;
             });
 
@@ -177,6 +191,7 @@ export default class HostLobby extends Component {
 
         this.ws.onclose = () => {
             Alert.alert("Disconnected from Websocket API.");
+            clearTimeout(this.timer);
         }
 
         const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
@@ -260,6 +275,7 @@ export default class HostLobby extends Component {
                 <View style = {styles.SongInfo}>
                     <Text>{this.state.activeSong.name} - {this.state.activeSong.artists} (thumbs-up) (thumbs-down)</Text>
                     <ProgressBar
+                        enabled = {this.state.activeSong.isSet}
                         time = {this.state.activeSong.length}
                         factor = {500}
                         length = {300}
@@ -293,16 +309,18 @@ export default class HostLobby extends Component {
                                     styles.recommendation
                                 ]}
                             >
-                                <View style = {styles.songInfoView}>
-                                    <Text style = {styles.recommendationTitle}>{item.title}</Text>
-                                    <Text style = {styles.recommendationArtists}>{getArtistString(item.artists)}</Text>
-                                </View>
-
-                                <View style = {styles.voteInfoView}>
-                                    <Text>{(this.state.votes[item.id]) ? this.state.votes[item.id] : "0"}</Text>
-                                </View>
+                                <TouchableTrack
+                                    trackid = {item.id}
+                                    name = {item.name}
+                                    imageurl = {item.album.images[0].url}
+                                    artists = {item.artists}
+                                    votes = {this.state.votes[item.id]}
+                                />
 
                             </TouchableOpacity>
+
+
+
                         )}
                         keyExtractor = {item => item.id}
 

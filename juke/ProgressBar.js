@@ -48,12 +48,12 @@ export default class ProgressBar extends Component {
                 height: this.props.height,
                 backgroundColor: this.props.barColor
             }}>
-                <View style = {{
+                {this.props.enabled && <View style = {{
                     width: this.state.length,
                     height: this.props.height,
                     backgroundColor: this.props.progressColor
                 }}>
-                </View>
+                </View>}
             </View>
         )
 
