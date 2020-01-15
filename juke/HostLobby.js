@@ -311,7 +311,12 @@ export default class HostLobby extends Component {
             <View style={styles.HostLobbyBody}>
 
                 <View style= {styles.HostLobbyHeader}>
-                    <Text>{lobbyInfo.name}: {lobbyInfo.key}</Text>
+                    <View style = {styles.lobbyNameView}>
+                        <Text style = {styles.lobbyName}>{lobbyInfo.name}</Text>
+                    </View>
+                    <View style = {styles.lobbyKeyView}>
+                    <Text style = {styles.lobbyKey}>Join with: {lobbyInfo.key}</Text>
+                    </View>
                 </View>
 
                 <View style = {styles.TrackImageView}>
@@ -322,7 +327,7 @@ export default class HostLobby extends Component {
                 </View>
 
                 <View style = {styles.SongInfo}>
-                    <Text>{this.state.activeSong.name} - {this.state.activeSong.artists} (thumbs-up) (thumbs-down)</Text>
+                    <Text>{this.state.activeSong.name} - {this.state.activeSong.artists}</Text>
                     <ProgressBar
                         enabled = {this.state.activeSong.isSet}
                         time = {this.state.activeSong.length}
@@ -389,9 +394,35 @@ const styles = StyleSheet.create({
     },
 
     HostLobbyHeader: {
+        flexDirection: "row",
         flex: 1,
-        backgroundColor: "#333333",
+        backgroundColor: "#ffffff",
+        alignItems: "center",
+        justifyContent: "space-around"
+    },
 
+    lobbyNameView: {
+        backgroundColor: "#2299dd",
+        borderRadius: 10,
+        padding: 10,
+        margin: 10
+    },
+
+    lobbyKeyView: {
+        backgroundColor: "#2299dd",
+        borderRadius: 10,
+        padding: 10,
+        margin: 10
+    },
+
+    lobbyName: {
+        color: "#151515",
+        fontSize: 20
+    },
+
+    lobbyKey: {
+        color: "#151515",
+        fontSize: 20
     },
 
     TrackImageView: {
@@ -401,7 +432,9 @@ const styles = StyleSheet.create({
 
     SongInfo: {
         flex: 1,
-        backgroundColor: "#999999"
+        backgroundColor: "#999999",
+        justifyContent: "center",
+        alignItems: "center"
     },
 
     Recommendations: {
