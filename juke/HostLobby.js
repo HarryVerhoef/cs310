@@ -122,6 +122,37 @@ export default class HostLobby extends Component {
             // play(id, name, img_url, artists, length, callback)
             // this.play(nextSong)
 
+            /* Get track info from spotify */
+
+            spotifySDKBridge.getAccessToken((error, result) => {
+                if (error) {
+                    Alert.alert("ERROR: " + error);
+                } else {
+
+                    const spotify_url = "https://api.spotify.com/v1/tracks/";
+
+                    fetch(spotify_url + nextSong, {
+                        method: "get",
+                        headers: {
+                            "Authorization": "Bearer " + result
+                        }
+                    })
+                    .then((response) => response.json())
+                    .then((responseJson) => {
+                        this.play(
+                            nextSong,
+                            responseJson.name,
+                            responseJson.album.images[0].url,
+                            getArtistString(responseJson.artists),
+                            responseJson.duration_ms
+                        );
+                    })
+                    .catch((error) => {
+                        Alert.alert("ERROR: " + error);
+                    })
+                }
+            });
+
 
         })
         .catch((error) => {
@@ -160,6 +191,7 @@ export default class HostLobby extends Component {
                 // Alert.alert("length: " + length);
 
                 /* Set timer to last 90% of the currently playing track */
+                clearTimeout(this.timer);
                 this.timer = setInterval(() => this.endVoting(), 0.1 * length);
 
             }
