@@ -1,11 +1,14 @@
 import React, {Component} from "react";
 import {
     View,
+    Text,
     Alert,
-    Touchable
+    Touchable,
+    StyleSheet,
+    Image
 } from "react-native";
 
-export default class TouchableTrack extends Component {
+export default class Track extends Component {
 
     constructor(props) {
         super(props);
@@ -59,23 +62,26 @@ export default class TouchableTrack extends Component {
             <View style = {styles.trackContainer}>
 
                 <View style = {styles.imageBox}>
-                    <Image
-                        style = {{
-                            width: 64,
-                            height: 64
-                        }}
-                        source = {{uri: this.props.imageurl}}
-                    />
+                    <View style = {styles.imageView}>
+                        <Image
+                            style = {{
+                                width: 50,
+                                height: 50,
+                                padding: 10
+                            }}
+                            source = {{uri: this.props.imageurl}}
+                        />
+                    </View>
                 </View>
 
                 <View style = {styles.infoBox}>
                     <Text>{this.props.name}</Text>
-                    <Text>{this.getArtistString(this.props.trackartists)}</Text>
+                    <Text>{this.getArtistString(this.props.artists)}</Text>
                 </View>
 
-                <View>
-                    <View style = {styles.voteBox}>
-                        <Text>{this.props.votes}</Text>
+                <View style = {styles.voteBox}>
+                    <View style = {styles.voteView}>
+                        <Text style = {styles.voteText}>{(this.props.votes) ? this.props.votes : "0"}</Text>
                     </View>
                 </View>
 
@@ -91,21 +97,41 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flex: 1,
         alignSelf: "stretch",
-        alignItems: "stretch"
+        alignItems: "stretch",
+        backgroundColor: "#ffffff"
     },
 
     imageBox: {
         flex: 1,
-        backgroundColor: "#333333"
+        alignContent: "center"
+    },
+
+    imageView: {
+        padding: 5,
+        alignItems: "center"
     },
 
     infoBox: {
-        flex: 4,
-        backgroundColor: "#666666"
+        flex: 4
     },
 
     voteBox: {
         flex: 1,
-        backgroundColor: "#999999"
+        alignItems: "center",
+        justifyContent: "center"
+    },
+
+    voteView: {
+        width: 50,
+        height: 50,
+        padding: 5,
+        justifyContent: "center",
+        backgroundColor: "#494949",
+        borderRadius: 10
+    },
+
+    voteText: {
+        alignSelf: "center",
+        color: "#ffffff"
     }
 });

@@ -18,7 +18,7 @@ import {
     FlatList
     } from 'react-native';
 import ProgressBar from "./ProgressBar.js";
-import TouchableTrack from "./TouchableTrack";
+import Track from "./Track.js";
 window.navigator.userAgent = 'react-native';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
@@ -309,7 +309,7 @@ export default class HostLobby extends Component {
                                     styles.recommendation
                                 ]}
                             >
-                                <TouchableTrack
+                                <Track
                                     trackid = {item.id}
                                     name = {item.name}
                                     imageurl = {item.album.images[0].url}
