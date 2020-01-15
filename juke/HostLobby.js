@@ -427,7 +427,9 @@ const styles = StyleSheet.create({
 
     TrackImageView: {
         flex: 3,
-        backgroundColor: "#666666"
+        backgroundColor: "#666666",
+        justifyContent: "center",
+        alignItems: "center"
     },
 
     SongInfo: {
