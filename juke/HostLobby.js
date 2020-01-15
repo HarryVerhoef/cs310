@@ -83,6 +83,33 @@ export default class HostLobby extends Component {
         }
     }
 
+    getRecommendations(access_token) {
+
+        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: qs.stringify({
+                "uid": DeviceInfo.getUniqueId(),
+                "access_token": access_token
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            this.setState({
+                recommendations: responseJson,
+                voteEnabled: true
+            });
+        })
+        .catch((error) => {
+            Alert.alert("ERROR: " + error);
+        });
+    }
+
     endVoting() {
 
         /* Disable the voting for this song */
@@ -146,6 +173,8 @@ export default class HostLobby extends Component {
                             getArtistString(responseJson.artists),
                             responseJson.duration_ms
                         );
+
+                        this.getRecommendations(result);
                     })
                     .catch((error) => {
                         Alert.alert("ERROR: " + error);
@@ -154,10 +183,17 @@ export default class HostLobby extends Component {
             });
 
 
+
+
         })
         .catch((error) => {
             Alert.alert("ERROR " + error);
         });
+
+
+        /* Fetch new recommendations and re-enable voting */
+
+
 
     }
 
@@ -226,30 +262,11 @@ export default class HostLobby extends Component {
             clearTimeout(this.timer);
         }
 
-        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
-
         spotifySDKBridge.getAccessToken((error, result) => {
             if (error) {
                 Alert.alert(error);
             } else {
-                fetch(url, {
-                    method: "POST",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: qs.stringify({
-                        "uid": DeviceInfo.getUniqueId(),
-                        "access_token": result
-                    })
-                })
-                .then((response) => response.json())
-                .then((responseJson) => {
-                    this.setState({recommendations: responseJson});
-                })
-                .catch((error) => {
-                    Alert.alert("ERROR: " + error);
-                });
+                this.getRecommendations(result);
             }
         });
     }
