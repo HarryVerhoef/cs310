@@ -41,12 +41,34 @@ exports.handler = async (event) => {
 
         /* (3) Remove items corresponding to lobby_key in lobby-track */
 
-        let old_lobby_track_res = await dynamo.deleteItem({
+        let vote_array_res = await dynamo.query({
             TableName: "lobby-track",
-            Key: {
-                "lobby_key": {"S": lobby_key}
-            },
-            ReturnValues: "ALL_OLD"
+            ProjectionExpression: "track_id",
+            KeyConditionExpression: "lobby_key = :lk",
+            ExpressionAttributeValues: {
+                ":lk": {"S": lobby_key}
+            }
+        }).promise();
+
+        let vote_array = vote_array_res.Items;
+
+        var deleteRequests = [];
+
+        vote_array.forEach((item) => {
+            deleteRequests.push({
+                DeleteRequest: {
+                    Key: {
+                        "lobby_key": {"S": lobby_key},
+                        "track_id": {"S": item.track_id.S}
+                    }
+                }
+            });
+        });
+
+        await dynamo.batchWriteItem({
+            RequestItems: {
+                "lobby-track": deleteRequests
+            }
         }).promise();
 
         res = {

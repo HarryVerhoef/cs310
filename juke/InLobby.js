@@ -26,6 +26,17 @@ import qs from "query-string";
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
+
+
+
+function getArtistString(artists) {
+    var newArr = artists.map(function(val, index) {
+        return val.name;
+    });
+
+    return newArr.join(", ");
+}
+
 export default class HostLobby extends Component {
 
     ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
@@ -46,14 +57,6 @@ export default class HostLobby extends Component {
             voteEnabled: false,
             votes: {}
         }
-    }
-
-    getArtistString(artists) {
-        var newArr = artists.map(function(val, index) {
-            return val.name;
-        });
-
-        return newArr.join(", ");
     }
 
     getRecommendations(access_token) {
@@ -88,76 +91,44 @@ export default class HostLobby extends Component {
         /* Disable the voting for this song */
         this.setState({voteEnabled: false});
 
-        spotifySDKBridge.getAccessToken((error, result) => {
-            if (error) {
-                Alert.alert("ERROR: " + error);
-            } else {
-                const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_next_song";
-                fetch(url, {
-                    method: "POST",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: qs.stringify({
-                        uid: DeviceInfo.getUniqueId(),
-                        access_token: result
-                    })
-                })
-                .then((response) => response.json())
-                .then((responseJson) => {
-                    this.play(
-                        responseJson.id,
-                        responseJson.name,
-                        responseJson.image_url,
-                        responseJson.artists,
-                        responseJson.length
-                    );
+        /* Fetch final vote numbers from lambda */
 
-                    this.getRecommendations(result);
-                })
-                .catch((error) => {
-                    Alert.alert("ERROR: " + error);
-                });
-            }
+        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_next_song";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: qs.stringify({
+                uid: DeviceInfo.getUniqueId()
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            // Handle final vote response
+            // Alert.alert(responseJson);
+
+            var max = -1;
+            var nextSong = "";
+
+            responseJson.forEach((item) => {
+                if (item.vote_no.N > max) {
+                    max = item.vote_no.N;
+                    nextSong = item.track_id.S;
+                }
+            });
+
+
+            /* Get track info from spotify */
+
+
+        })
+        .catch((error) => {
+            Alert.alert("ERROR " + error);
         });
 
-    }
-
-    play(id, name, img_url, artists, length, callback) {
-
-        Alert.alert(artists);
-
-        spotifySDKBridge.play("spotify:track:" + id, (error, result) => {
-
-
-
-            if (error) {
-                Alert.alert("error" + error);
-            } else {
-                this.setState({
-                    activeSong: {
-                        isSet: true,
-                        name: name,
-                        uri: img_url,
-                        artists: artists,
-                        length: length
-                    }
-                });
-
-
-
-                /* Set timer to last 90% of the currently playing track */
-                clearTimeout(this.timer);
-                this.timer = setInterval(() => this.endVoting(), 0.1 * length);
-
-            }
-
-            if (callback) {
-                callback();
-            }
-
-        });
     }
 
     componentDidMount = () => {
@@ -270,7 +241,8 @@ export default class HostLobby extends Component {
                                 onPress = {() => {
 
                                     if (!this.state.activeSong.isSet) {
-                                        this.play(item.id, item.name, item.album.images[0].url, this.getArtistString(item.artists), item.duration_ms)
+                                        Alert.alert(item.duration_ms);
+                                        this.play(item.id, item.name, item.album.images[0].url, getArtistString(item.artists), item.duration_ms)
                                     } else {
                                         this.ws.send(JSON.stringify({
                                             action: "vote",
