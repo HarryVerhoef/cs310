@@ -28,7 +28,7 @@ var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 export default class HostLobby extends Component {
 
-    ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
+    ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2?uid=" + DeviceInfo.getUniqueId());
 
     constructor(props) {
         super(props);
@@ -126,7 +126,7 @@ export default class HostLobby extends Component {
 
     play(id, name, img_url, artists, length, callback) {
 
-        Alert.alert(artists);
+        // Alert.alert(artists);
 
         spotifySDKBridge.play("spotify:track:" + id, (error, result) => {
 
@@ -170,10 +170,11 @@ export default class HostLobby extends Component {
             // Received a message from lambda, probably a vote message
             var votes = JSON.parse(evt.data);
             // this.state.recommendations.forEach((item) => {})
+            Alert.alert(votes);
             newVotes = this.state.votes;
-            votes.forEach((item) => {
-                newVotes[item.track_id.S] = item.vote_no.N;
-            });
+            // votes.forEach((item) => {
+            //     newVotes[item.track_id.S] = item.vote_no.N;
+            // });
 
             this.setState({votes: newVotes});
         };
