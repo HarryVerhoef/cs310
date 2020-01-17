@@ -167,17 +167,12 @@ export default class HostLobby extends Component {
         };
 
         this.ws.onmessage = (evt) => {
-            // Received a message from lambda, probably a vote message
             var votes = JSON.parse(evt.data);
-            // this.state.recommendations.forEach((item) => {})
-            // Alert.alert(votes);
-            // newVotes = this.state.votes;
+
             let newVotes = Object.assign({}, this.state.votes);
             votes.forEach((item) => {
                 newVotes[item.track_id.S] = item.vote_no.N;
             });
-
-            Alert.alert(newVotes);
 
             this.setState({votes: newVotes});
 

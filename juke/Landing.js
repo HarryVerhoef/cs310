@@ -44,42 +44,42 @@ export default class Landing extends Component {
                     <Button
                         style = {styles.joinLobbyButton}
                         onPress = {() => {
-                            // socket.emit("joinRoom", this.state.text);
+                            const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/join_lobby";
+
+                            fetch(url, {
+                                method: "POST",
+                                headers: {
+                                    Accept: "application/json",
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: qs.stringify({
+                                    uid: DeviceInfo.getUniqueId(),
+                                    lobby_key: this.state.text
+                                })
+                            })
+                            .then((response) => response.json());
+                            .then((responseJson) => {
+                                if (responseJson.lobby_key == this.state.text) {
+                                    navigate("CreateLobby", {
+                                        spotifySDKBridge: spotifySDKBridge
+                                    });
+                                } else {
+                                    Alert.alert("Lobby does not exist");
+                                }
+                            })
+                            .catch((error) => {
+                                Alert.alert("ERROR: " + error);
+                            });
                         }}
                         title = "Join Lobby"
                     />
                 </View>
                 <Button
                     style = {styles.createLobbyButton}
-                    onPress = {async () => {
+                    onPress = {() => {
 
-                        // socket.emit("newLobby", DeviceInfo.getUniqueId());
-                        // try {
-                        //     let response = await fetch("https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/new_lobby", {
-                        //         method: "POST",
-                        //         headers: {
-                        //             Accept: "application/json",
-                        //             "Content-Type": "application/json"
-                        //         },
-                        //         body: JSON.stringify({
-                        //             uid: DeviceInfo.getUniqueId();
-                        //         })
-                        //     });
-                        //     Alert.alert(response.json());
-                        //     navigate("CreateLobby", {
-                        //         spotifySDKBridge: spotifySDKBridge
-                        //     });
-                        // } catch (error) {
-                        //     navigate("CreateLobby", {
-                        //         spotifySDKBridge: spotifySDKBridge
-                        //     });
-                        // }
+                        navigate("CreateLobby", spotifySDKBridge);
 
-
-                        // Surely no point of creating preemptive lobby when can create one whole lobby at CreateLobby.js
-                        navigate("CreateLobby", {
-                            spotifySDKBridge: spotifySDKBridge
-                        });
                     }}
                     title = "Create Lobby"
                 />

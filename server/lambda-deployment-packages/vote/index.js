@@ -10,13 +10,24 @@ exports.handler = async (event, context, callback) => {
     console.log(req);
     var res;
 
+    var apigwManagementApi = new AWS.ApiGatewayManagementApi({
+        apiVersion: "2018-11-29",
+        endpoint: event.requestContext.domainName + "/" + event.requestContext.stage,
+        signatureVersion: "v4"
+    });
+
+    console.log(apigwManagementApi.endpoint);
+
+
+
     // console.log(event);
 
     /*
     ** 1. Get lobby key from device table
     ** 2. Update lobby-track item with vote
     ** 3. Create lobby-wide vote object
-    ** 4. return the current state of votes
+    ** 4. Get connection_ids of users in lobby
+    ** 5. Send the current state of votes to all connected users
     **
     */
 
@@ -38,13 +49,10 @@ exports.handler = async (event, context, callback) => {
             AttributesToGet: ["lobby_key"],
         }).promise();
 
-
-
         let lobby_key = lobby_key_res.Item.lobby_key.S;
 
-        console.log(lobby_key);
-
         /* (2) Update lobby-track item with vote */
+
         let vote_no_res = await dynamo.updateItem({
             TableName: "lobby-track",
             Key: {
@@ -74,16 +82,55 @@ exports.handler = async (event, context, callback) => {
 
         let vote_array = vote_array_res.Items;
 
+        /* (4) Get connection_ids of users in lobby */
+
+        let connected_users_res = await dynamo.query({
+            TableName: "lobby-connection",
+            ProjectionExpression: "connection_id",
+            KeyConditionExpression: "lobby_key = :lk",
+            ExpressionAttributeValues: {
+                ":lk": {"S": lobby_key}
+            }
+        }).promise();
+
+        let connected_users = connected_users_res.Items;
+
+        console.log(connected_users);
+
+        const postCalls = connected_users.map(async (item) => {
+            try {
+                await apigwManagementApi.postToConnection({ ConnectionId: item.connection_id.S, Data: JSON.stringify(vote_array) }).promise();
+            } catch (e) {
+                if (e.statusCode === 410) {
+                    console.log(`Found stale connection, deleting ${item.connection_id.S}`);
+                    await dynamo.delete({ TableName: "lobby_connection", Key: { lobby_key: {"S": lobby_key}, connection_id: item.conneciton_id } }).promise();
+                } else {
+                    throw e;
+                }
+            }
+        });
+
+        await Promise.all(postCalls);
+
         res = {
             statusCode: 200,
             body: JSON.stringify(vote_array)
         };
 
         console.log(res);
-
-        // callback(null, res);
-
         return res;
+
+
+        // res = {
+        //     statusCode: 200,
+        //     body: JSON.stringify(vote_array)
+        // };
+
+        // console.log(res);
+
+        // // callback(null, res);
+
+        // return res;
 
     } catch(error) {
         console.log(error);
