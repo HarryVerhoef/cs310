@@ -120,10 +120,16 @@ export default class HostLobby extends Component {
                 }
             });
 
-
-            /* Get track info from spotify */
-
-
+            this.setState({
+                activeSong: {
+                    isSet: true,
+                    name: responseJson.name,
+                    uri: responseJson.image_url,
+                    artists: responseJson.artists,
+                    length: responseJson.length
+                }
+            });
+            
         })
         .catch((error) => {
             Alert.alert("ERROR " + error);

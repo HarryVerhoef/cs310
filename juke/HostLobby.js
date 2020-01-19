@@ -106,15 +106,20 @@ export default class HostLobby extends Component {
                 })
                 .then((response) => response.json())
                 .then((responseJson) => {
-                    this.play(
-                        responseJson.id,
-                        responseJson.name,
-                        responseJson.image_url,
-                        responseJson.artists,
-                        responseJson.length
-                    );
+                    if (responseJson.length) {
+                        this.play(
+                            responseJson.id,
+                            responseJson.name,
+                            responseJson.image_url,
+                            responseJson.artists,
+                            responseJson.length
+                        );
+                        this.getRecommendations(result);
+                    } else {
+                        Alert.alert("ERROR: " + responseJson);
+                    }
 
-                    this.getRecommendations(result);
+
                 })
                 .catch((error) => {
                     Alert.alert("ERROR: " + error);
