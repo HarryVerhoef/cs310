@@ -21,9 +21,7 @@
 @property (nonatomic, strong) SPTConfiguration *configuration;
 
 - (BOOL)invokeAuthModal;
-- (NSDictionary *)getPlaylists;
 - (BOOL)playURI:(NSString *)uri;
-- (BOOL)connectAppRemote;
 - (BOOL)skipSong;
 - (BOOL)queue:(NSString *)uri;
 - (NSString *)getAccessToken;

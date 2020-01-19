@@ -18,6 +18,7 @@ window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import DeviceInfo from "react-native-device-info";
+import qs from "query-string";
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
@@ -57,10 +58,10 @@ export default class Landing extends Component {
                                     lobby_key: this.state.text
                                 })
                             })
-                            .then((response) => response.json());
+                            .then((response) => response.json())
                             .then((responseJson) => {
                                 if (responseJson.lobby_key == this.state.text) {
-                                    navigate("CreateLobby", {
+                                    navigate("InLobby", {
                                         spotifySDKBridge: spotifySDKBridge
                                     });
                                 } else {

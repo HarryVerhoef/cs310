@@ -9,27 +9,12 @@
 #import <Foundation/Foundation.h>
 #import "SpotifySDKBridgeHeader.h"
 
-
-
-
 @implementation SpotifySDKBridge
 
 AppDelegate *appDelegate;
           
 
 RCT_EXPORT_MODULE();
-
-
-
-
-
-RCT_EXPORT_METHOD(instantiateBridge:(RCTResponseSenderBlock)jsCallback)
-{
-  dispatch_async(dispatch_get_main_queue(), ^{
-    jsCallback(@[[NSNull null], @1]);
-  });
-  
-}
 
 
 RCT_EXPORT_METHOD(auth:(RCTResponseSenderBlock)jsCallback)
@@ -40,14 +25,6 @@ RCT_EXPORT_METHOD(auth:(RCTResponseSenderBlock)jsCallback)
     jsCallback(@[[NSNull null], result]);
   });
   
-}
-
-RCT_EXPORT_METHOD(getPlaylists:(RCTResponseSenderBlock)jsCallback) {
-//  NSArray *result = [self.appDelegate getPlaylists];
-//  jsCallback(@[[NSNull null], result]);
-  
-//  NSNumber *result = [NSNumber numberWithBool:[self.appDelegate getPlaylists]];
-  jsCallback(@[[NSNull null], [self.appDelegate getPlaylists]]);
 }
 
 RCT_EXPORT_METHOD(play:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallback) {

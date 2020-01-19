@@ -109,6 +109,10 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 - (void)sessionManager:(SPTSessionManager *)manager didRenewSession:(SPTSession *)session
 {
   NSLog(@"sessionManager renewed: %@", session);
+  self.appRemote.connectionParameters.accessToken = session.accessToken;
+  self.sessionManager.session = session;
+  self.appRemote.delegate = self;
+  [self.appRemote connect];
 }
 
 #pragma mark - SPTAppRemoteDelegate
@@ -170,14 +174,8 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
   self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
   
-  
-  
-  
-  
-  if (self.sessionManager.session.isExpired) {
-    NSLog(@"Renewing the session");
-    [self.sessionManager renewSession];
-  } else {
+  if (!self.sessionManager.session) {
+    NSLog(@"No session exists... Initiating a new one...");
     if (@available(iOS 11, *)) {
         // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
         [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
@@ -185,6 +183,9 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
         // Use this on iOS versions < 11 to use SFSafariViewController
         [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
     }
+  } else {
+    NSLog(@"Renewing the session");
+    [self.sessionManager renewSession];
   }
   
   return self.appRemote.isConnected;
@@ -236,52 +237,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   return responseDictionary;
 }
 
-
-- (NSDictionary *)getPlaylists {
-  if (self.appRemote.isConnected) {
-    
-    NSLog(@"Attempting to get playlists and appRemote is connected...");
-    NSDictionary *responseDictionary = [self httpPostRequest:@" https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_playlists"];
-    NSLog(@"responseDictionary ===== %@", responseDictionary);
-    return responseDictionary;
-//    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-//    __block NSMutableArray *contentItems = [[NSMutableArray alloc] init];
-//
-//    [self.appRemote.contentAPI fetchRootContentItemsForType:SPTAppRemoteContentTypeDefault callback:^(id _Nullable result, NSError * _Nullable error) {
-//      if (error) {
-//        NSLog(@"Error retrieving Root Content Items: %@", error.localizedDescription);
-//      } else {
-//        NSLog(@"Fetched root content items");
-//
-//        for (id container in result) {
-//          if ([[container valueForKey:@"title"] isEqual: @"Your Library"]) {
-//            [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
-//              NSLog(@"Scanning Your Library...");
-//              for (id container in result) {
-//                if ([[container valueForKey:@"URI"] isEqual:@"spotify:playlists"]) {
-//                  [self.appRemote.contentAPI fetchChildrenOfContentItem:container callback:^(id  _Nullable result, NSError * _Nullable error) {
-//                    for (id playlist in result) {
-//                      [contentItems addObject:[playlist valueForKey:@"title"]];
-//                    }
-//                    dispatch_semaphore_signal(sema);
-//                  }];
-//                }
-//              }
-//            }];
-//          }
-//        }
-//      }
-//    }];
-//    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-//    NSLog(@"Finished retrieving root content items.");
-    
-//    return contentItems;
-  } else {
-    NSLog(@"Attempted to get playlists but appRemote was not connected.");
-    return [NSMutableDictionary dictionary];
-  }
-}
-
 - (BOOL) playURI:(NSString *)uri {
   __block dispatch_semaphore_t playSema = dispatch_semaphore_create(0);
   if (self.appRemote.isConnected) {
@@ -306,18 +261,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   dispatch_semaphore_wait(playSema, DISPATCH_TIME_FOREVER);
   return success;
   
-}
-
-- (BOOL)connectAppRemote {
-  NSLog(@"Attempting to connect app Remote in connectAppRemote...");
-  NSLog(@"Access token: %@", self.sessionManager.session.accessToken);
-  if (self.appRemote.isConnected) {
-    NSLog(@"appRemote is already connected, no need to connect again");
-  } else {
-    self.appRemote.delegate = self;
-    [self.appRemote connect];
-  }
-  return self.appRemote.isConnected;
 }
 
 - (BOOL)skipSong {
@@ -372,6 +315,9 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 }
 
 - (NSString *)getAccessToken {
+  if (self.sessionManager.session.isExpired) {
+    [self.sessionManager renewSession];
+  }
   return self.sessionManager.session.accessToken;
 }
 
