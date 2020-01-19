@@ -218,6 +218,8 @@ export default class HostLobby extends Component {
         .catch((error) => {
             Alert.alert("Error unmounting HostLobby component: " + error);
         });
+
+        clearTimeout(this.timer);
     }
 
     render() {
@@ -241,7 +243,7 @@ export default class HostLobby extends Component {
                         <Text style = {styles.lobbyName}>{lobbyInfo.name}</Text>
                     </View>
                     <View style = {styles.lobbyKeyView}>
-                    <Text style = {styles.lobbyKey}>Join with: {lobbyInfo.key}</Text>
+                        <Text style = {styles.lobbyKey}>Join with: {lobbyInfo.key}</Text>
                     </View>
                 </View>
 

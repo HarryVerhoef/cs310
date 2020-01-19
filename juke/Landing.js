@@ -62,7 +62,14 @@ export default class Landing extends Component {
                             .then((responseJson) => {
                                 if (responseJson.lobby_key == this.state.text) {
                                     navigate("InLobby", {
-                                        spotifySDKBridge: spotifySDKBridge
+                                        spotifySDKBridge: spotifySDKBridge,
+                                        lobby_key: responseJson.lobby_key,
+                                        lobby_name: responseJson.lobby_name,
+                                        active_song: responseJson.active_song,
+                                        votes: responseJson.votes,
+                                        chat: false,
+                                        lyrics: false,
+                                        volume: false
                                     });
                                 } else {
                                     Alert.alert("Lobby does not exist");

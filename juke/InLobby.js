@@ -37,25 +37,38 @@ function getArtistString(artists) {
     return newArr.join(", ");
 }
 
-export default class HostLobby extends Component {
+export default class InLobby extends Component {
 
     ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
 
     constructor(props) {
         super(props);
+        const {navigate} = this.props;
+
+        var newVotes = {};
+        this.props.navigation.state.params.votes.forEach((item) => {
+            newVotes[item.track_id.S] = item.vote_no.N;
+        });
+
+        const actSong = this.props.navigation.state.params.active_song;
+
+        Alert.alert(actSong);
+
+        const activeSong = {
+            isSet: true,
+            name: actSong.name.S,
+            uri: actSong.image_url.S,
+            artists: actSong.artists.S,
+            length: actSong.length.N
+        };
+
         this.state = {
             recommendations: [],
             lobby: {},
             selected: {},
-            activeSong: {
-                isSet: false,
-                name: "<SongName>",
-                uri: "",
-                artists: "<Artists>",
-                length: 100000
-            },
+            activeSong: activeSong,
             voteEnabled: false,
-            votes: {}
+            votes: newVotes
         }
     }
 
@@ -129,7 +142,6 @@ export default class HostLobby extends Component {
                     length: responseJson.length
                 }
             });
-            
         })
         .catch((error) => {
             Alert.alert("ERROR " + error);
@@ -140,7 +152,9 @@ export default class HostLobby extends Component {
     componentDidMount = () => {
 
         this.ws.onopen = () => {
-            this.setState({voteEnabled: true});
+            this.setState({
+                voteEnabled: true
+            });
         };
 
         this.ws.onmessage = (evt) => {
@@ -159,50 +173,27 @@ export default class HostLobby extends Component {
             Alert.alert("Disconnected from Websocket API.");
             clearTimeout(this.timer);
         }
-
-        spotifySDKBridge.getAccessToken((error, result) => {
-            if (error) {
-                Alert.alert(error);
-            } else {
-                this.getRecommendations(result);
-            }
-        });
     }
 
     componentWillUnmount() {
 
         /* Called when react-navigation pops HostLobby component off of navigation stack */
-
-        /* Send HTTP request to delete current lobby from DynamoDB */
-
-        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/delete_lobby";
-
-        fetch(url, {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: qs.stringify({
-                uid: DeviceInfo.getUniqueId()
-            })
-        })
-        .catch((error) => {
-            Alert.alert("Error unmounting HostLobby component: " + error);
-        });
+        clearTimeout(this.timer);
     }
 
     render() {
-        const {navigation} = this.props;
+
+        Alert.alert(this.props.navigation.state.params);
+
         const uid = DeviceInfo.getUniqueId();
+        const {navigation} = this.props;
 
         const lobbyInfo = {
-            name: navigation.getParam("name","ERROR RETRIEVING LOBBY NAME"),
-            key: navigation.getParam("key", "ERROR RETRIEVING LOBBY KEY"),
-            playlist_id: navigation.getParam("playlist_id","ERROR RETRIEVING PLAYLIST ID"),
-            chat: (navigation.getParam("chat","ERROR RETRIEVING CHAT STATUS") == "true"),
-            lyrics: (navigation.getParam("lyrics","ERROR RETRIEVING LYRICS STATUS") == "true"),
-            volume: (navigation.getParam("volume","ERROR RETRIEVING VOLUME STATUS") == "true")
+            name: this.props.navigation.state.params.lobby_name,
+            key: this.props.navigation.state.params.lobby_key,
+            chat: (this.props.navigation.state.params.chat == "true"),
+            lyrics: (this.props.navigation.state.params.lyrics == "true"),
+            volume: (this.props.navigation.state.params.volume == "true")
         }
 
         return (
@@ -213,7 +204,7 @@ export default class HostLobby extends Component {
                         <Text style = {styles.lobbyName}>{lobbyInfo.name}</Text>
                     </View>
                     <View style = {styles.lobbyKeyView}>
-                    <Text style = {styles.lobbyKey}>Join with: {lobbyInfo.key}</Text>
+                        <Text style = {styles.lobbyKey}>Join with: {lobbyInfo.key}</Text>
                     </View>
                 </View>
 
