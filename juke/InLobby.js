@@ -39,7 +39,7 @@ function getArtistString(artists) {
 
 export default class InLobby extends Component {
 
-    ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2");
+    ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2?uid=" + DeviceInfo.getUniqueId());
 
     constructor(props) {
         super(props);
