@@ -12,12 +12,29 @@ exports.handler = async (event, context, callback) => {
     var res;
 
     /*
-    ** 1. Query the recommendations feature in Spotify API
-    ** 2. return result (res)
+    ** 1. Get lobby_key from uid
+    ** 2. Query the recommendations feature in Spotify API
+    ** 3. Create recommendations array for DDB
+    ** 4. Put recommendations in lobby item
+    ** 5. Return response (res)
     */
 
-    /* (1) Query the recommendations feature in Spotify API */
+
     try {
+
+        /* (1) Get lobby_key from uid */
+
+        let lobby_key_res = await dynamo.getItem({
+            TableName: "device",
+            Key: {
+                "device_id": {"S": req.uid}
+            },
+            AttributesToGet: ["lobby_key"],
+        }).promise();
+
+        let lobby_key = lobby_key_res.Item.lobby_key.S;
+
+        /* (2) Query the recommendations feature in Spotify API */
 
         var seed_artists = [
             "7EQ0qTo7fWT7DPxmxtSYEc",
@@ -47,7 +64,40 @@ exports.handler = async (event, context, callback) => {
             }
         });
 
-        /* (2) Return response (res) */
+        /* (3) Create recommendations array for DDB */
+
+        let recommendations_dynamo = [];
+
+        recommendations.data.tracks.forEach((item) => {
+
+            let artistString = item.artists.map((val) => val.name).join(", ");
+
+            recommendations_dynamo.push({"M": {
+                "track_id": {"S": item.id},
+                "track_name": {"S": item.name},
+                "track_artists": {"S": artistString},
+                "track_cover_image_url": {"S": item.album.images[1].url},
+                "track_duration_ms": {"N": item.duration_ms.toString()}
+            }});
+        });
+
+        console.log(recommendations_dynamo);
+
+        /* (4) Put recommendations in lobby item */
+
+        await dynamo.updateItem({
+            TableName: "lobby",
+            Key: {
+                "lobby_key": {"S": lobby_key}
+            },
+            UpdateExpression: "set recommendations = :r",
+            ExpressionAttributeValues: {
+                ":r": {"L": recommendations_dynamo}
+            },
+            ReturnValues: "NONE"
+        }).promise();
+
+        /* (5) Return response (res) */
 
         res = {
             statusCode: 200,
@@ -63,7 +113,7 @@ exports.handler = async (event, context, callback) => {
 
         res = {
             statusCode: 500,
-            body: JSON.stringify(error)
+            body: error
         };
 
         console.log(res);
