@@ -59,7 +59,8 @@ export default class InLobby extends Component {
             name: actSong.name.S,
             uri: actSong.image_url.S,
             artists: actSong.artists.S,
-            length: actSong.length.N
+            length: actSong.length.N,
+            time_invoked: actSong.time_invoked.N
         };
 
         this.state = {
@@ -139,7 +140,8 @@ export default class InLobby extends Component {
                     name: responseJson.name,
                     uri: responseJson.image_url,
                     artists: responseJson.artists,
-                    length: responseJson.length
+                    length: responseJson.length,
+                    time_invoked: responseJson.time_invoked
                 }
             });
         })
@@ -225,6 +227,8 @@ export default class InLobby extends Component {
                         height = {10}
                         barColor = {"#ffffff"}
                         progressColor = {"#cc5555"}
+                        time_invoked = {(this.state.activeSong.isSet) ? this.state.activeSong.time_invoked : Date.now()}
+
                     >
                     </ProgressBar>
                 </View>
@@ -236,17 +240,11 @@ export default class InLobby extends Component {
                         renderItem = {({item}) => (
                             <TouchableOpacity
                                 onPress = {() => {
-
-                                    if (!this.state.activeSong.isSet) {
-                                        Alert.alert(item.duration_ms);
-                                        this.play(item.id, item.name, item.album.images[0].url, getArtistString(item.artists), item.duration_ms)
-                                    } else {
-                                        this.ws.send(JSON.stringify({
-                                            action: "vote",
-                                            uid: DeviceInfo.getUniqueId(),
-                                            track_id: item.id
-                                        }));
-                                    }
+                                    this.ws.send(JSON.stringify({
+                                        action: "vote",
+                                        uid: DeviceInfo.getUniqueId(),
+                                        track_id: item.id
+                                    }));
                                 }}
                                 style = {[
                                     styles.recommendation

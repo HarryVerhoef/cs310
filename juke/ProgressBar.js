@@ -16,13 +16,14 @@ export default class ProgressBar extends Component {
     refreshBar() {
         const totalTime = this.props.time;
         const factor = this.props.factor;
+        const initTime = this.props.time_invoked;
         const mountingTime = Date.now();
 
         clearTimeout(this.timer);
 
         this.timer = setInterval(() => {
             this.setState({
-                length: ((Date.now() - mountingTime) / totalTime) * this.props.length
+                length: ((Date.now() - initTime) / totalTime) * this.props.length
             });
         }, totalTime / factor);
     }

@@ -146,7 +146,8 @@ export default class HostLobby extends Component {
                         name: name,
                         uri: img_url,
                         artists: artists,
-                        length: length
+                        length: length,
+                        time_invoked: Date.now()
                     }
                 });
 
@@ -168,7 +169,7 @@ export default class HostLobby extends Component {
                     body: qs.stringify({
                         uid: DeviceInfo.getUniqueId(),
                         track_id: id,
-                        time: Date.now(),
+                        time: this.state.activeSong.time_invoked,
                         name: name,
                         uri: img_url,
                         artists: artists,
@@ -177,7 +178,11 @@ export default class HostLobby extends Component {
                 })
                 .then((response) => response.json())
                 .then((responseJson) => {
-                    Alert.alert(responseJson);
+                    Alert.alert(JSON.stringify({
+                        now: Date.now(),
+                        time_invoked: this.state.activeSong.time_invoked,
+                        difference: Date.now() - this.state.activeSong.time_invoked
+                    }));
                 })
                 .catch((error) => {
                     Alert.alert("ERROR: " + error);
@@ -291,6 +296,7 @@ export default class HostLobby extends Component {
                         height = {10}
                         barColor = {"#ffffff"}
                         progressColor = {"#cc5555"}
+                        time_invoked = {(this.state.activeSong.isSet) ? this.state.activeSong.time_invoked : Date.now()}
                     >
                     </ProgressBar>
                 </View>
