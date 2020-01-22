@@ -154,7 +154,34 @@ export default class HostLobby extends Component {
 
                 /* Set timer to last 90% of the currently playing track */
                 clearTimeout(this.timer);
-                this.timer = setInterval(() => this.endVoting(), 0.1 * length);
+                this.timer = setInterval(() => this.endVoting(), 0.9 * length);
+
+                /* Set the active track to that which has just been played */
+                const set_track_url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/set_track";
+
+                fetch(set_track_url, {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: qs.stringify({
+                        uid: DeviceInfo.getUniqueId(),
+                        track_id: id,
+                        time: Date.now(),
+                        name: name,
+                        uri: img_url,
+                        artists: artists,
+                        duration_ms: length
+                    })
+                })
+                .then((response) => response.json())
+                .then((responseJson) => {
+                    Alert.alert(responseJson);
+                })
+                .catch((error) => {
+                    Alert.alert("ERROR: " + error);
+                });
 
             }
 

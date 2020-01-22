@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf set_track.zip
+zip -r set_track.zip . -x "zip"
