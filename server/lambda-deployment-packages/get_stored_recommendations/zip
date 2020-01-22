@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -rf get_stored_recommendations.zip
+zip -r get_stores_recommendations.zip . -x "zip"

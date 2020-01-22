@@ -1,0 +1,22 @@
+{
+  "name": "get_stored_recommendations",
+  "version": "1.0.0",
+  "description": "Gets the recommendations for the lobby that are stored in DDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HarryVerhoef/cs310.git"
+  },
+  "author": "Harry Verhoef",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HarryVerhoef/cs310/issues"
+  },
+  "homepage": "https://github.com/HarryVerhoef/cs310#readme",
+  "dependencies": {
+    "querystring": "^0.2.0"
+  }
+}
