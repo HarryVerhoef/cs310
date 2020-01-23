@@ -159,6 +159,7 @@ export default class InLobby extends Component {
         };
 
         this.ws.onmessage = (evt) => {
+            Alert.alert(evt.data);
             // Received a message from lambda, probably a vote message
             var votes = JSON.parse(evt.data);
             // this.state.recommendations.forEach((item) => {})
