@@ -103,7 +103,13 @@ exports.handler = async (event, context, callback) => {
             } catch (e) {
                 if (e.statusCode === 410) {
                     console.log(`Found stale connection, deleting ${item.connection_id.S}`);
-                    await dynamo.deleteItem({ TableName: "lobby_connection", Key: { lobby_key: {"S": lobby_key}, connection_id: item.conneciton_id } }).promise();
+                    await dynamo.deleteItem({
+                        TableName: "lobby-connection",
+                        Key: {
+                            "lobby_key": {"S": lobby_key},
+                            "connection_id": {"S": item.conneciton_id.S}
+                        }
+                    }).promise();
                 } else {
                     throw e;
                 }
@@ -117,10 +123,11 @@ exports.handler = async (event, context, callback) => {
             body: JSON.stringify(vote_array)
         };
 
-        console.log(res);
+        console.log("RES: " + JSON.stringify(res));
         return res;
 
     } catch(error) {
+
         console.log(error);
         res = {
             statusCode: 500,
