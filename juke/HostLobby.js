@@ -329,6 +329,7 @@ export default class HostLobby extends Component {
                                     imageurl = {item.album.images[0].url}
                                     artists = {item.artists}
                                     votes = {this.state.votes[item.id]}
+                                    isArtistString = {false}
                                 />
 
                             </TouchableOpacity>

@@ -76,7 +76,7 @@ export default class Track extends Component {
 
                 <View style = {styles.infoBox}>
                     <Text>{this.props.name}</Text>
-                    <Text>{this.getArtistString(this.props.artists)}</Text>
+                    <Text>{(this.props.isArtistString) ? this.props.artists : this.getArtistString(this.props.artists)}</Text>
                 </View>
 
                 <View style = {styles.voteBox}>

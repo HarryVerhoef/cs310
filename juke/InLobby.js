@@ -73,31 +73,32 @@ export default class InLobby extends Component {
         }
     }
 
-    getRecommendations(access_token) {
+    getRecommendations() {
 
-        const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
-
-        fetch(url, {
+        /* Fetch current lobby recommendations object */
+        const recommendations_url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_stored_recommendations";
+        fetch(recommendations_url, {
             method: "POST",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/x-www-form-urlencoded"
             },
             body: qs.stringify({
-                "uid": DeviceInfo.getUniqueId(),
-                "access_token": access_token
+                uid: DeviceInfo.getUniqueId()
             })
         })
         .then((response) => response.json())
         .then((responseJson) => {
+            // Alert.alert("RECOMMENDATIONS: " + JSON.stringify(responseJson.L));
             this.setState({
-                recommendations: responseJson,
+                recommendations: responseJson.L,
                 voteEnabled: true
             });
         })
         .catch((error) => {
             Alert.alert("ERROR: " + error);
         });
+
     }
 
     endVoting() {
@@ -154,9 +155,7 @@ export default class InLobby extends Component {
     componentDidMount = () => {
 
         this.ws.onopen = () => {
-            this.setState({
-                voteEnabled: true
-            });
+            this.setState({ voteEnabled: true });
         };
 
         this.ws.onmessage = (evt) => {
@@ -175,6 +174,12 @@ export default class InLobby extends Component {
             Alert.alert("Disconnected from Websocket API.");
             clearTimeout(this.timer);
         }
+
+        this.getRecommendations();
+
+
+
+
     }
 
     componentWillUnmount() {
@@ -184,8 +189,6 @@ export default class InLobby extends Component {
     }
 
     render() {
-
-        Alert.alert(this.props.navigation.state.params);
 
         const uid = DeviceInfo.getUniqueId();
         const {navigation} = this.props;
@@ -228,7 +231,6 @@ export default class InLobby extends Component {
                         barColor = {"#ffffff"}
                         progressColor = {"#cc5555"}
                         time_invoked = {(this.state.activeSong.isSet) ? this.state.activeSong.time_invoked : Date.now()}
-
                     >
                     </ProgressBar>
                 </View>
@@ -243,7 +245,7 @@ export default class InLobby extends Component {
                                     this.ws.send(JSON.stringify({
                                         action: "vote",
                                         uid: DeviceInfo.getUniqueId(),
-                                        track_id: item.id
+                                        track_id: item.M.track_id.S
                                     }));
                                 }}
                                 style = {[
@@ -251,19 +253,18 @@ export default class InLobby extends Component {
                                 ]}
                             >
                                 <Track
-                                    trackid = {item.id}
-                                    name = {item.name}
-                                    imageurl = {item.album.images[0].url}
-                                    artists = {item.artists}
-                                    votes = {this.state.votes[item.id]}
+                                    trackid = {item.M.track_id.S}
+                                    name = {item.M.track_name.S}
+                                    imageurl = {item.M.track_cover_image_url.S}
+                                    artists = {item.M.track_artists.S}
+                                    votes = {this.state.votes[item.M.track_id.S]}
+                                    isArtistString = {true}
                                 />
 
                             </TouchableOpacity>
 
-
-
                         )}
-                        keyExtractor = {item => item.id}
+                        keyExtractor = {item => item.M.track_id.S}
 
                     />}
                 </View>
