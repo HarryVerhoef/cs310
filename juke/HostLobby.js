@@ -107,7 +107,7 @@ export default class HostLobby extends Component {
                 .then((response) => response.json())
                 .then((responseJson) => {
                     if (responseJson.length) {
-                        this.play(
+                        this.queue(
                             responseJson.id,
                             responseJson.name,
                             responseJson.image_url,
@@ -129,20 +129,61 @@ export default class HostLobby extends Component {
 
     }
 
-    play(id, name, img_url, artists, length, callback) {
+    nextSong() {
+        this.setState({
+            activeSong: {
+                ...this.state.nextSong,
+                time_invoked: Date.now()
+            }
+        });
 
-        // Alert.alert(artists);
+
+
+
+
+        /* Set the active track to that which has just been played */
+        const set_track_url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/set_track";
+
+        fetch(set_track_url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: qs.stringify({
+                uid: DeviceInfo.getUniqueId(),
+                track_id: this.state.activeSong.id,
+                time: this.state.activeSong.time_invoked,
+                name: this.activeSong.name,
+                uri: this.activeSong.uri,
+                artists: this.activeSong.artists,
+                duration_ms: this.activeSong.length
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            /* Send WS packet to aws */
+            this.ws.send(JSON.stringify({
+                action: "next-song",
+                uid: DeviceInfo.getUniqueId(),
+                track: this.state.activeSong
+            }));
+        })
+        .catch((error) => {
+            Alert.alert("ERROR: " + error);
+        });
+    }
+
+    play(id, name, img_url, artists, length) {
 
         spotifySDKBridge.play("spotify:track:" + id, (error, result) => {
-
-
-
             if (error) {
                 Alert.alert("error" + error);
             } else {
                 this.setState({
                     activeSong: {
                         isSet: true,
+                        id: id,
                         name: name,
                         uri: img_url,
                         artists: artists,
@@ -151,11 +192,11 @@ export default class HostLobby extends Component {
                     }
                 });
 
-
-
                 /* Set timer to last 90% of the currently playing track */
                 clearTimeout(this.timer);
+                clearTimeout(this.next_song_timer);
                 this.timer = setInterval(() => this.endVoting(), 0.9 * length);
+                this.next_song_timer = setInterval(() => this.nextSong(), length);
 
                 /* Set the active track to that which has just been played */
                 const set_track_url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/set_track";
@@ -187,13 +228,29 @@ export default class HostLobby extends Component {
                 .catch((error) => {
                     Alert.alert("ERROR: " + error);
                 });
+            }
+        });
+    }
+
+    queue(id, name, img_url, artists, length) {
+
+        spotifySDKBridge.queue("spotify:track:" + id, (error, result) => {
+            if (error) {
+                Alert.alert("error" + error);
+            } else {
+                this.setState({
+                    nextSong: {
+                        isSet: true,
+                        id: id,
+                        name: name,
+                        uri: img_url,
+                        artists: artists,
+                        length: length
+                    }
+                });
+
 
             }
-
-            if (callback) {
-                callback();
-            }
-
         });
     }
 
@@ -204,14 +261,24 @@ export default class HostLobby extends Component {
         };
 
         this.ws.onmessage = (evt) => {
-            var votes = JSON.parse(evt.data);
+            var msg = JSON.parse(evt.data);
 
-            let newVotes = Object.assign({}, this.state.votes);
-            votes.forEach((item) => {
-                newVotes[item.track_id.S] = item.vote_no.N;
-            });
+            Alert.alert(msg);
+            
+            if (msg.action == "vote") {
 
-            this.setState({votes: newVotes});
+                votes = msg.body;
+
+                let newVotes = Object.assign({}, this.state.votes);
+
+                votes.forEach((item) => {
+                    newVotes[item.track_id.S] = item.vote_no.N;
+                });
+
+                this.setState({votes: newVotes});
+            } else if (msg.action == "next") {
+                this.setState({activeSong: msg.body});
+            }
 
         };
 

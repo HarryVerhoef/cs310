@@ -94,9 +94,8 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 {
   NSLog(@"success: %@", session);
   
-  
+  self.sessionManager.session = session;
   self.appRemote.delegate = self;
-  
   self.appRemote.connectionParameters.accessToken = session.accessToken;
   [self.appRemote connect];
 }
