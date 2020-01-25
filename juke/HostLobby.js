@@ -137,6 +137,8 @@ export default class HostLobby extends Component {
             }
         });
 
+        Alert.alert(this.state.activeSong);
+
 
 
 
@@ -154,20 +156,25 @@ export default class HostLobby extends Component {
                 uid: DeviceInfo.getUniqueId(),
                 track_id: this.state.activeSong.id,
                 time: this.state.activeSong.time_invoked,
-                name: this.activeSong.name,
-                uri: this.activeSong.uri,
-                artists: this.activeSong.artists,
-                duration_ms: this.activeSong.length
+                name: this.state.activeSong.name,
+                uri: this.state.activeSong.uri,
+                artists: this.state.activeSong.artists,
+                duration_ms: this.state.activeSong.length
             })
         })
         .then((response) => response.json())
         .then((responseJson) => {
             /* Send WS packet to aws */
             this.ws.send(JSON.stringify({
-                action: "next-song",
+                action: "next",
                 uid: DeviceInfo.getUniqueId(),
                 track: this.state.activeSong
             }));
+
+            clearTimeout(this.timer);
+            clearTimeout(this.next_song_timer);
+            this.timer = setInterval(() => this.endVoting(), 0.9 * this.state.activeSong.length);
+            this.next_song_timer = setInterval(() => this.nextSong(), this.state.activeSong.length);
         })
         .catch((error) => {
             Alert.alert("ERROR: " + error);
@@ -264,7 +271,7 @@ export default class HostLobby extends Component {
             var msg = JSON.parse(evt.data);
 
             Alert.alert(msg);
-            
+
             if (msg.action == "vote") {
 
                 votes = msg.body;

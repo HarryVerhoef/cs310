@@ -159,16 +159,24 @@ export default class InLobby extends Component {
         };
 
         this.ws.onmessage = (evt) => {
-            Alert.alert(evt.data);
-            // Received a message from lambda, probably a vote message
-            var votes = JSON.parse(evt.data);
-            // this.state.recommendations.forEach((item) => {})
-            newVotes = this.state.votes;
-            votes.forEach((item) => {
-                newVotes[item.track_id.S] = item.vote_no.N;
-            });
+            var msg = JSON.parse(evt.data);
 
-            this.setState({votes: newVotes});
+            Alert.alert(msg);
+
+            if (msg.action == "vote") {
+
+                votes = msg.body;
+
+                let newVotes = Object.assign({}, this.state.votes);
+
+                votes.forEach((item) => {
+                    newVotes[item.track_id.S] = item.vote_no.N;
+                });
+
+                this.setState({votes: newVotes});
+            } else if (msg.action == "next") {
+                this.setState({activeSong: msg.body});
+            }
         };
 
         this.ws.onclose = () => {
