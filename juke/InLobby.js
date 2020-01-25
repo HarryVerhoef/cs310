@@ -176,6 +176,7 @@ export default class InLobby extends Component {
                 this.setState({votes: newVotes});
             } else if (msg.action == "next") {
                 this.setState({activeSong: msg.body});
+                this.getRecommmendations();
             }
         };
 
