@@ -12,6 +12,7 @@ export default class Track extends Component {
 
     constructor(props) {
         super(props);
+        this.state = {votes: this.props.votes};
     };
 
     componentDidMount() {
@@ -19,9 +20,7 @@ export default class Track extends Component {
     };
 
     componentDidUpdate(prevProps) {
-        // if (prevProps != this.state.props) {
-        //     this.updateItem();
-        // }
+
     }
 
     updateItem() {
@@ -59,7 +58,7 @@ export default class Track extends Component {
     render() {
 
         return (
-            <View style = {styles.trackContainer}>
+            <View style = {(this.props.isSelected) ? styles.trackContainerSelected : styles.trackContainerUnselected}>
 
                 <View style = {styles.imageBox}>
                     <View style = {styles.imageView}>
@@ -75,13 +74,13 @@ export default class Track extends Component {
                 </View>
 
                 <View style = {styles.infoBox}>
-                    <Text>{this.props.name}</Text>
-                    <Text>{(this.props.isArtistString) ? this.props.artists : this.getArtistString(this.props.artists)}</Text>
+                    <Text numberOfLines={1} style={styles.trackName}>{this.props.name}</Text>
+                    <Text numberOfLines={1} style={styles.trackArtists}>{(this.props.isArtistString) ? this.props.artists : this.getArtistString(this.props.artists)}</Text>
                 </View>
 
                 <View style = {styles.voteBox}>
                     <View style = {styles.voteView}>
-                        <Text style = {styles.voteText}>{(this.props.votes) ? this.props.votes : "0"}</Text>
+                        <Text style = {styles.voteText}>{this.props.votes}</Text>
                     </View>
                 </View>
 
@@ -93,12 +92,19 @@ export default class Track extends Component {
 
 const styles = StyleSheet.create({
 
-    trackContainer: {
+    trackContainerUnselected: {
         flexDirection: "row",
         flex: 1,
         alignSelf: "stretch",
         alignItems: "stretch",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#666666"
+    },
+    trackContainerSelected: {
+        flexDirection: "row",
+        flex: 1,
+        alignSelf: "stretch",
+        alignItems: "stretch",
+        backgroundColor: "#999999"
     },
 
     imageBox: {
@@ -112,7 +118,15 @@ const styles = StyleSheet.create({
     },
 
     infoBox: {
-        flex: 4
+        flex: 4,
+        paddingTop: 5
+    },
+
+    trackName: {
+        color: "#ffffff"
+    },
+    trackArtists: {
+        fontSize: 12
     },
 
     voteBox: {
@@ -126,12 +140,12 @@ const styles = StyleSheet.create({
         height: 50,
         padding: 5,
         justifyContent: "center",
-        backgroundColor: "#494949",
         borderRadius: 10
     },
 
     voteText: {
         alignSelf: "center",
-        color: "#ffffff"
+        color: "#ffffff",
+        fontWeight: "bold"
     }
 });

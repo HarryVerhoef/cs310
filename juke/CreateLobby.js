@@ -24,6 +24,7 @@ window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
 import Carousel from "react-native-snap-carousel";
 import DeviceInfo from "react-native-device-info";
+import {TapGestureHandler, State} from "react-native-gesture-handler";
 import qs from "query-string";
 
 
@@ -31,6 +32,10 @@ import qs from "query-string";
 
 
 export default class CreateLobby extends Component {
+
+    static navigationOptions = {
+        header: null
+    }
 
     constructor(props) {
         super(props);
@@ -227,29 +232,38 @@ export default class CreateLobby extends Component {
                                 return;
                             }
 
-                            const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby";
-                            fetch(url, {
-                                method: "POST",
-                                headers: {
-                                    Accept: "application/json",
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                },
-                                body: qs.stringify({
-                                    uid: DeviceInfo.getUniqueId(),
-                                    name: this.state.lobbyName,
-                                    playlist_id: this.state.activePlaylist.id,
-                                    chat: this.state.chatRoom,
-                                    lyrics: this.state.lyrics,
-                                    volume: this.state.volumeControl
-                                })
-                            })
-                            .then((response) => response.json())
-                            .then((responseJson) => {
-                                navigate("HostLobby", responseJson);
-                            })
-                            .catch((error) => {
-                                Alert.alert(error);
+                            spotifySDKBridge.getAccessToken((error, result) => {
+                                if (error) {
+                                    Alert.alert("ERROR: " + error);
+                                } else {
+                                    const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby";
+                                    fetch(url, {
+                                        method: "POST",
+                                        headers: {
+                                            Accept: "application/json",
+                                            "Content-Type": "application/x-www-form-urlencoded"
+                                        },
+                                        body: qs.stringify({
+                                            uid: DeviceInfo.getUniqueId(),
+                                            name: this.state.lobbyName,
+                                            playlist_id: this.state.activePlaylist.id,
+                                            chat: this.state.chatRoom,
+                                            lyrics: this.state.lyrics,
+                                            volume: this.state.volumeControl,
+                                            access_token: result
+                                        })
+                                    })
+                                    .then((response) => response.json())
+                                    .then((responseJson) => {
+                                        navigate("HostLobby", responseJson);
+                                    })
+                                    .catch((error) => {
+                                        Alert.alert(error);
+                                    });
+                                }
                             });
+
+
                         }}
                         style = {{height: "75%"}}
                     >

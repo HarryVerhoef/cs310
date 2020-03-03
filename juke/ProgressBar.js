@@ -1,7 +1,8 @@
 import React, {Component} from "react";
 import {
     View,
-    Alert
+    Alert,
+    StyleSheet
 } from "react-native";
 
 export default class ProgressBar extends Component {
@@ -44,11 +45,12 @@ export default class ProgressBar extends Component {
     render() {
 
         return (
-            <View style = {{
-                width: this.props.length,
+            <View style = {
+                [{width: this.props.length,
                 height: this.props.height,
-                backgroundColor: this.props.barColor
-            }}>
+                backgroundColor: this.props.barColor},
+                styles.bar]
+            }>
                 {this.props.enabled && <View style = {{
                     width: this.state.length,
                     height: this.props.height,
@@ -60,3 +62,12 @@ export default class ProgressBar extends Component {
 
     };
 };
+
+const styles = StyleSheet.create({
+    bar: {
+        borderColor: "#ffffff",
+        borderWidth: 0,
+        borderRadius: 10,
+        overflow: "hidden"
+    }
+});

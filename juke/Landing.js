@@ -25,6 +25,10 @@ var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
 export default class Landing extends Component {
 
+    static navigationOptions = {
+        header: null
+    }
+
     constructor(props) {
         super(props);
         this.state = {text: ""};
@@ -41,6 +45,7 @@ export default class Landing extends Component {
                         onChangeText = {(text) => this.setState({text})}
                         value = {this.state.text}
                         autoCorrect = {false}
+                        autoCapitalize = "none"
                     />
                     <Button
                         style = {styles.joinLobbyButton}

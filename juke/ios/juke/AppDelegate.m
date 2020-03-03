@@ -84,7 +84,17 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
   NSLog(@"AppDelegate application method called.");
+  NSDictionary *params = [self.appRemote authorizationParametersFromURL:url];
+  NSString *token = params[SPTAppRemoteAccessTokenKey];
+  if (token) {
+    self.appRemote.connectionParameters.accessToken = token;
+  } else if (params[SPTAppRemoteErrorDescriptionKey]) {
+    NSLog(@"%@", params[SPTAppRemoteErrorDescriptionKey]);
+  }
+  
   [self.sessionManager application:app openURL:url options:options];
+  [self.sessionManager.session setValuesForKeysWithDictionary:options];
+  
   return YES;
 }
 
@@ -102,7 +112,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
 - (void)sessionManager:(SPTSessionManager *)manager didFailWithError:(NSError *)error
 {
-  NSLog(@"sessionManager fail: %@", error);
+  NSLog(@"sessionManager fail: %@", error.localizedDescription);
 }
 
 - (void)sessionManager:(SPTSessionManager *)manager didRenewSession:(SPTSession *)session
@@ -175,13 +185,17 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   
   if (!self.sessionManager.session) {
     NSLog(@"No session exists... Initiating a new one...");
+    
     if (@available(iOS 11, *)) {
+        
         // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
         [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
+        
     } else {
         // Use this on iOS versions < 11 to use SFSafariViewController
         [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
     }
+    
   } else {
     NSLog(@"Renewing the session");
     [self.sessionManager renewSession];
