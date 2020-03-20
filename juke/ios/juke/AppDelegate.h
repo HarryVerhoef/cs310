@@ -19,10 +19,12 @@
 @property (nonatomic, strong) SPTAppRemote *appRemote;
 @property (nonatomic, strong) SPTSessionManager *sessionManager;
 @property (nonatomic, strong) SPTConfiguration *configuration;
+@property (nonatomic, strong) NSString *playerState;
 
 - (BOOL)invokeAuthModal;
 - (BOOL)playURI:(NSString *)uri;
 - (BOOL)skipSong;
 - (BOOL)queue:(NSString *)uri;
 - (NSString *)getAccessToken;
+- (NSString *)getCurrentlyPlayingTrack;
 @end

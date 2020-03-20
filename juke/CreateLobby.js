@@ -28,9 +28,6 @@ import {TapGestureHandler, State} from "react-native-gesture-handler";
 import qs from "query-string";
 
 
-
-
-
 export default class CreateLobby extends Component {
 
     static navigationOptions = {
@@ -146,6 +143,7 @@ export default class CreateLobby extends Component {
                                         });
                                     }
                                 });
+
                             }}
 
                         >

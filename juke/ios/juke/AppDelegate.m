@@ -151,6 +151,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 - (void)playerStateDidChange:(id<SPTAppRemotePlayerState>)playerState
 {
   NSLog(@"Track name: %@", playerState.track.name);
+  self.playerState = playerState.track.URI;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -190,6 +191,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
         
         // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
         [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
+        
         
     } else {
         // Use this on iOS versions < 11 to use SFSafariViewController
@@ -298,6 +300,14 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   } else {
     NSLog(@"Attempting to skip song and appRemote is not connected");
     return NO;
+  }
+}
+
+- (NSString *)getCurrentlyPlayingTrack {
+  if (self.appRemote.isConnected && self.playerState) {
+    return self.playerState;
+  } else {
+    return @"";
   }
 }
 

@@ -10,9 +10,14 @@ import {
     Button,
     Alert,
     TouchableHighlight,
+    TouchableOpacity,
     Touchable,
     NativeModules,
-    Platform
+    Platform,
+    Image,
+    Dimensions,
+    Keyboard,
+    Animated
     } from 'react-native';
 window.navigator.userAgent = 'react-native';
 import io from 'socket.io-client/dist/socket.io';
@@ -29,26 +34,71 @@ export default class Landing extends Component {
         header: null
     }
 
+    componentDidMount() {
+        this.keyboardDidShowSub = Keyboard.addListener("keyboardWillShow", this.handleKeyboardDidShow);
+        this.keyboardDidHideSub = Keyboard.addListener("keyboardWillHide", this.handleKeyboardDidHide);
+    }
+
+    componentWillUnmount() {
+        thsi.keyboardDidShowSub.remove();
+        thsi.keyboardDidHideSub.remove();
+    }
+
+    handleKeyboardDidShow = (event) => {
+        const keyboardHeight = event.endCoordinates.height;
+        this.setState({keyboardShift: keyboardHeight});
+        // Animated.timing(
+        //     this.state.keyboardShift,
+        //     {
+        //       toValue: keyboardHeight,
+        //       duration: 500,
+        //       useNativeDriver: true,
+        //     }
+        // ).start();
+    }
+
+    handleKeyboardDidHide = (event) => {
+        this.setState({keyboardShift: 0});
+    }
+
+
     constructor(props) {
         super(props);
-        this.state = {text: ""};
+        this.state = {
+            text: "",
+            keyboardShift: 0
+        };
     }
 
     render() {
         const {navigate} = this.props.navigation;
         return (
             <View style={styles.body}>
-                <Text style={styles.title}>Juke</Text>
-                <View>
-                    <TextInput
-                        style = {styles.keyInput}
-                        onChangeText = {(text) => this.setState({text})}
-                        value = {this.state.text}
-                        autoCorrect = {false}
-                        autoCapitalize = "none"
-                    />
-                    <Button
-                        style = {styles.joinLobbyButton}
+                <Image
+                    style={[
+                        {width: Dimensions.get("window").width, height: Dimensions.get("window").height},
+                        styles.backgroundImage
+                    ]}
+                    source={require("./img/background.jpg")}
+                />
+                <View style={styles.titleView}>
+                    <Text style={styles.title}>Juke</Text>
+                </View>
+                <View style={[
+                    {marginBottom: this.state.keyboardShift},
+                    styles.lobbyButtons
+                ]}>
+                    <View style={styles.joinButtons}>
+                        <TextInput
+                            style = {styles.keyInput}
+                            onChangeText = {(text) => this.setState({text})}
+                            value = {this.state.text}
+                            autoCorrect = {false}
+                            autoCapitalize = "none"
+                            placeholder="LOBBY KEY"
+                            placeholderTextColor="#bbbbbb"
+                        />
+                        <TouchableOpacity
                         onPress = {() => {
                             const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/join_lobby";
 
@@ -84,18 +134,26 @@ export default class Landing extends Component {
                                 Alert.alert("ERROR: " + error);
                             });
                         }}
-                        title = "Join Lobby"
-                    />
+                        >
+                            <View style = {styles.joinLobbyButton}>
+                                <Text style={styles.joinLobbyText}>JOIN</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.createButton}>
+                        <TouchableOpacity
+                        onPress = {() => {
+                            navigate("CreateLobby", spotifySDKBridge);
+                        }}
+                        >
+                            <View style={styles.createLobbyButton}>
+                                <Text style={styles.createLobbyText}>CREATE LOBBY</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                <Button
-                    style = {styles.createLobbyButton}
-                    onPress = {() => {
 
-                        navigate("CreateLobby", spotifySDKBridge);
-
-                    }}
-                    title = "Create Lobby"
-                />
 
             </View>
         );
@@ -103,6 +161,13 @@ export default class Landing extends Component {
 };
 
 const styles = StyleSheet.create({
+
+    backgroundImage: {
+        position: "absolute",
+        top: 0, left: 0,
+        zIndex: 0
+    },
+
     body: {
         flex: 1,
         textAlign: "center",
@@ -112,23 +177,78 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 30,
-        color: "#29d",
+        color: "#ffffff",
         textAlign: "center",
-        margin: 50
+        margin: 50,
+        zIndex: 1
     },
     keyInput: {
         width: 150,
-        height: 50,
+        height: 40,
         textAlign: "center",
-        backgroundColor: "#fff",
-        margin: 20,
+        marginRight: 20,
         borderStyle: "solid",
         borderWidth: 1,
-        borderColor: "#29d",
-        backgroundColor: "#383838",
-        borderRadius: 5,
-        fontSize: 20,
+        borderColor: "#ffffff",
+        backgroundColor: "rgba(15,15,15,0.8)",
+        borderRadius: 50,
+        fontSize: 12,
         color: "#fff"
+    },
+    joinLobbyButton: {
+        width: 40,
+        height: 40,
+        justifyContent: "center",
+        borderStyle: "solid",
+        borderWidth: 1,
+        borderColor: "#ffffff",
+        backgroundColor: "rgba(15,15,15,1)",
+        borderRadius: 40
+    },
+    joinLobbyText: {
+        fontSize: 12,
+        textAlign: "center",
+        color: "#fff",
+    },
 
+    titleView: {
+        flex: 3,
+        width: "100%",
+        justifyContent: "center",
+        backgroundColor: "rgba(15,15,15,0.5)",
+        zIndex: 1
+    },
+
+    lobbyButtons: {
+        flex: 1,
+        width: "100%",
+        backgroundColor: "rgba(15,15,15,0.5)",
+        zIndex: 1
+    },
+    joinButtons: {
+        flex: 1,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    createButton: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    createLobbyButton: {
+        width: 210,
+        height: 40,
+        justifyContent: "center",
+        borderStyle: "solid",
+        borderWidth: 1,
+        borderColor: "#ffffff",
+        backgroundColor: "rgba(15,15,15,0.8)",
+        borderRadius: 40
+    },
+    createLobbyText: {
+        fontSize: 12,
+        textAlign: "center",
+        color: "#fff",
     }
 });

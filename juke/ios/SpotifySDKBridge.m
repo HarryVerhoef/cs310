@@ -46,4 +46,8 @@ RCT_EXPORT_METHOD(getAccessToken:(RCTResponseSenderBlock)jsCallback) {
   jsCallback(@[[NSNull null], [self.appDelegate getAccessToken]]);
 }
 
+RCT_EXPORT_METHOD(getCurrentTrack:(RCTResponseSenderBlock)jsCallback) {
+  jsCallback(@[[NSNull null], [self.appDelegate getCurrentlyPlayingTrack]]);
+}
+
 @end
