@@ -92,12 +92,13 @@ export default class Landing extends Component {
                         <TextInput
                             style = {styles.keyInput}
                             onChangeText = {(text) => this.setState({text})}
-                            value = {this.state.text}
                             autoCorrect = {false}
-                            autoCapitalize = "none"
+                            autoCapitalize = "characters"
                             placeholder="LOBBY KEY"
                             placeholderTextColor="#bbbbbb"
-                        />
+                        >
+                            <Text style={styles.keyInputText}>{this.state.text}</Text>
+                        </TextInput>
                         <TouchableOpacity
                         onPress = {() => {
                             const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/join_lobby";
@@ -185,15 +186,19 @@ const styles = StyleSheet.create({
     keyInput: {
         width: 150,
         height: 40,
-        textAlign: "center",
         marginRight: 20,
         borderStyle: "solid",
         borderWidth: 1,
         borderColor: "#ffffff",
         backgroundColor: "rgba(15,15,15,0.8)",
         borderRadius: 50,
+        textAlign: "center"
+    },
+    keyInputText: {
         fontSize: 12,
-        color: "#fff"
+        textAlign: "center",
+        color: "#ffffff",
+        backgroundColor: "rgba(0,0,0,0)"
     },
     joinLobbyButton: {
         width: 40,
