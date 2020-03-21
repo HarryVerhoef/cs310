@@ -793,7 +793,7 @@ const styles = StyleSheet.create({
 
     Recommendations: {
         flex: 2.5,
-        backgroundColor: "#cccccc",
+        backgroundColor: "#151515",
         zIndex: 3
     },
     recommendationPlaceholder: {

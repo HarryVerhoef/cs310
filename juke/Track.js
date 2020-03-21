@@ -41,19 +41,6 @@ export default class Track extends Component {
         return newArr.join(", ");
     }
 
-    /* PROPS:
-    ** width
-    ** height
-    ** track_id
-    ** track_name
-    ** image_url
-    ** artists
-    ** length
-    **
-    **
-    */
-
-
 
     render() {
 
@@ -74,13 +61,13 @@ export default class Track extends Component {
                 </View>
 
                 <View style = {styles.infoBox}>
-                    <Text numberOfLines={1} style={styles.trackName}>{this.props.name}</Text>
-                    <Text numberOfLines={1} style={styles.trackArtists}>{(this.props.isArtistString) ? this.props.artists : this.getArtistString(this.props.artists)}</Text>
+                    <Text numberOfLines={1} style={(this.props.isSelected) ? styles.trackNameSelected : styles.trackNameUnselected}>{this.props.name}</Text>
+                    <Text numberOfLines={1} style={(this.props.isSelected) ? styles.trackArtistsSelected : styles.trackArtistsUnSelected}>{(this.props.isArtistString) ? this.props.artists : this.getArtistString(this.props.artists)}</Text>
                 </View>
 
-                <View style = {styles.voteBox}>
-                    <View style = {styles.voteView}>
-                        <Text style = {styles.voteText}>{this.props.votes}</Text>
+                <View style={styles.voteBox}>
+                    <View style={styles.voteView}>
+                        <Text style={(this.props.isSelected) ? styles.voteTextSelected : styles.voteTextUnselected}>{this.props.votes}</Text>
                     </View>
                 </View>
 
@@ -97,14 +84,14 @@ const styles = StyleSheet.create({
         flex: 1,
         alignSelf: "stretch",
         alignItems: "stretch",
-        backgroundColor: "#666666"
+        backgroundColor: "#ffffff"
     },
     trackContainerSelected: {
         flexDirection: "row",
         flex: 1,
         alignSelf: "stretch",
         alignItems: "stretch",
-        backgroundColor: "#999999"
+        backgroundColor: "#151515"
     },
 
     imageBox: {
@@ -122,10 +109,18 @@ const styles = StyleSheet.create({
         paddingTop: 5
     },
 
-    trackName: {
+    trackNameUnselected: {
+        color: "#151515"
+    },
+    trackNameSelected: {
         color: "#ffffff"
     },
-    trackArtists: {
+    trackArtistsUnSelected: {
+        color: "#151515",
+        fontSize: 12
+    },
+    trackArtistsSelected: {
+        color: "#ffffff",
         fontSize: 12
     },
 
@@ -143,7 +138,12 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
 
-    voteText: {
+    voteTextUnselected: {
+        alignSelf: "center",
+        color: "#151515",
+        fontWeight: "bold"
+    },
+    voteTextSelected: {
         alignSelf: "center",
         color: "#ffffff",
         fontWeight: "bold"
