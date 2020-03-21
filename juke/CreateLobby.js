@@ -238,7 +238,7 @@ export default class CreateLobby extends Component {
                                 }}
                                  style = {{marginLeft: 20}}
                             />
-                            <Text style = {{marginLeft: 10}}>Chat Room</Text>
+                            <Text style = {{marginLeft: 10}}>CHAT</Text>
                         </View>
 
                         <View style = {styles.lobbySwitchView}>
@@ -249,7 +249,7 @@ export default class CreateLobby extends Component {
                                 }}
                                  style = {{marginLeft: 20}}
                             />
-                            <Text style = {{marginLeft: 10}}>Lyrics</Text>
+                            <Text style = {{marginLeft: 10}}>DESCRIPTION</Text>
                         </View>
 
                         <View style = {styles.lobbySwitchView}>
@@ -260,7 +260,7 @@ export default class CreateLobby extends Component {
                                 }}
                                  style = {{marginLeft: 20}}
                             />
-                            <Text style = {{marginLeft: 10}}>Volume Control</Text>
+                            <Text style = {{marginLeft: 10}}>VOLUME</Text>
                         </View>
 
                     </View>
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     lobbySettings: {
         width: Dimensions.get("window").width,
         height: Dimensions.get("window").height - (Dimensions.get("window").width + 90),
-        backgroundColor: "#999999",
+        backgroundColor: "#ffffff",
         alignItems: "center"
     },
 
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     createLobby: {
         width: "100%",
         height: 90,
-        backgroundColor: "#cccccc",
+        backgroundColor: "#ffffff",
         justifyContent: "center",
         alignItems: "center"
     },
