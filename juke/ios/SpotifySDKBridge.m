@@ -28,8 +28,12 @@ RCT_EXPORT_METHOD(auth:(RCTResponseSenderBlock)jsCallback)
 }
 
 RCT_EXPORT_METHOD(play:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallback) {
-  NSNumber *result = [NSNumber numberWithBool:[self.appDelegate playURI:uri]];
-  jsCallback(@[[NSNull null], result]);
+  
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSNumber *result = [NSNumber numberWithBool:[self.appDelegate playURI:uri]];
+    jsCallback(@[[NSNull null], result]);
+  });
+  
 }
 
 RCT_EXPORT_METHOD(skip:(RCTResponseSenderBlock)jsCallback) {

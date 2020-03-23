@@ -17,7 +17,8 @@ import {
     Platform,
     Image,
     FlatList,
-    Dimensions
+    Dimensions,
+    Modal
     } from 'react-native';
 import ProgressBar from "./ProgressBar.js";
 import Track from "./Track.js";
@@ -61,7 +62,8 @@ export default class HostLobby extends Component {
             userVoteWeighting: 1,
             track_description: "Loading description...",
             show_description: false,
-            recommendations_ready: false
+            recommendations_ready: false,
+            modalVisible: false
         }
     }
 
@@ -257,6 +259,66 @@ export default class HostLobby extends Component {
 
     }
 
+    showRecommendations = (showVotes=true, dark=false) => {
+
+        return (<FlatList
+            data = {this.state.recommendations}
+            extraData = {this.state}
+            renderItem = {({item, index}) => (
+                <TouchableOpacity
+                    onPress = {() => {
+
+                        this.setState({modalVisible: false});
+
+                        if (!this.state.activeSong.isSet) {
+                            this.play(item.M.track_id.S, item.M.track_name.S, item.M.track_cover_image_url.S, item.M.track_artists.S, parseInt(item.M.track_duration_ms.N))
+                        } else {
+                            if (this.state.userVoteIndex != index) {
+
+                                let newVotes = Object.assign({}, this.state.votes);
+
+                                if (this.state.current_vote_track) {
+                                    newVotes[this.state.current_vote_track] = parseFloat((parseFloat(newVotes[this.state.current_vote_track]) || 0) - parseFloat(this.state.userVoteWeighting));
+                                }
+                                newVotes[item.M.track_id.S] = parseFloat((parseFloat(newVotes[item.M.track_id.S]) || 0) + parseFloat(this.state.userVoteWeighting));
+
+                                this.setState({votes: newVotes});
+                                this.setState({current_vote_track: item.M.track_id.S});
+
+                                this.setState({userVoteIndex: index});
+                                this.ws.send(JSON.stringify({
+                                    action: "vote",
+                                    uid: DeviceInfo.getUniqueId(),
+                                    track_id: item.M.track_id.S
+                                }));
+                            } else {
+                                Alert.alert("You cannot vote for the same track twice...");
+                            }
+
+                        }
+                    }}
+                    style = {[
+                        styles.recommendation
+                    ]}
+                >
+                    <Track
+                        trackid={item.M.track_id.S}
+                        name={item.M.track_name.S}
+                        imageurl={item.M.track_cover_image_url.S}
+                        artists={item.M.track_artists.S}
+                        votes={(this.state.votes[item.M.track_id.S]) ? this.state.votes[item.M.track_id.S] : 0}
+                        isArtistString={true}
+                        isSelected={dark || this.state.userVoteIndex == index}
+                        userVoteWeighting={this.state.userVoteWeighting}
+                        showVotes={showVotes}
+                    />
+
+                </TouchableOpacity>
+            )}
+            keyExtractor = {item => item.M.track_id.S}
+        />)
+    }
+
     play(id, name, img_url, artists, length) {
 
         spotifySDKBridge.play("spotify:track:" + id, (error, result) => {
@@ -413,6 +475,7 @@ export default class HostLobby extends Component {
             } else {
                 this.getRecommendations(result, () => {
                     this.getStoredRecommendations();
+                    this.setState({modalVisible: true});
                 });
             }
         });
@@ -461,6 +524,22 @@ export default class HostLobby extends Component {
 
         return (
             <View style={styles.HostLobbyBody}>
+
+                <Modal
+                animationType="fade"
+                transparent={false}
+                visible={this.state.modalVisible}
+                onRequestClose={() => {
+                    Alert.alert("Modal has been closed");
+                }}>
+                    <View style={styles.modal}>
+                        <View style={styles.modalHeaderView}>
+                            <Text style={styles.modalHeaderText}>Select a track to kick things off...</Text>
+                        </View>
+                        {this.showRecommendations(false, true)}
+                    </View>
+                </Modal>
+
                 <TapGestureHandler
                     waitFor={this.doubleTapRef}
                     numberOfTaps={2}
@@ -613,60 +692,7 @@ export default class HostLobby extends Component {
                             <Text style={styles.nextSongText}>{this.state.nextSong.name} - {this.state.nextSong.artists}</Text>
                         </View>}
 
-                    {this.state.voteEnabled && <FlatList
-                        data = {this.state.recommendations}
-                        extraData = {this.state}
-                        renderItem = {({item, index}) => (
-                            <TouchableOpacity
-                                onPress = {() => {
-
-                                    if (!this.state.activeSong.isSet) {
-                                        this.play(item.M.track_id.S, item.M.track_name.S, item.M.track_cover_image_url.S, item.M.track_artists.S, parseInt(item.M.track_duration_ms.N))
-                                    } else {
-                                        if (this.state.userVoteIndex != index) {
-
-                                            let newVotes = Object.assign({}, this.state.votes);
-
-                                            if (this.state.current_vote_track) {
-                                                newVotes[this.state.current_vote_track] = parseFloat((parseFloat(newVotes[this.state.current_vote_track]) || 0) - parseFloat(this.state.userVoteWeighting));
-                                            }
-                                            newVotes[item.M.track_id.S] = parseFloat((parseFloat(newVotes[item.M.track_id.S]) || 0) + parseFloat(this.state.userVoteWeighting));
-
-                                            this.setState({votes: newVotes});
-                                            this.setState({current_vote_track: item.M.track_id.S});
-
-                                            this.setState({userVoteIndex: index});
-                                            this.ws.send(JSON.stringify({
-                                                action: "vote",
-                                                uid: DeviceInfo.getUniqueId(),
-                                                track_id: item.M.track_id.S
-                                            }));
-                                        } else {
-                                            Alert.alert("You cannot vote for the same track twice...");
-                                        }
-
-                                    }
-                                }}
-                                style = {[
-                                    styles.recommendation
-                                ]}
-                            >
-                                <Track
-                                    trackid = {item.M.track_id.S}
-                                    name = {item.M.track_name.S}
-                                    imageurl = {item.M.track_cover_image_url.S}
-                                    artists = {item.M.track_artists.S}
-                                    votes = {(this.state.votes[item.M.track_id.S]) ? this.state.votes[item.M.track_id.S] : 0}
-                                    isArtistString = {true}
-                                    isSelected = {this.state.userVoteIndex == index}
-                                    userVoteWeighting = {this.state.userVoteWeighting}
-                                />
-
-                            </TouchableOpacity>
-                        )}
-                        keyExtractor = {item => item.M.track_id.S}
-
-                    />}
+                    {this.state.voteEnabled && this.showRecommendations()}
                 </View>
 
             </View>
@@ -679,6 +705,31 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#ffffff",
         justifyContent: "space-around"
+    },
+
+    modal: {
+        width: "80%",
+        height: "80%",
+        marginTop: Dimensions.get("window").height * 0.1,
+        backgroundColor: "#151515",
+        alignSelf: "center",
+        justifyContent: "center",
+        shadowColor: "#000000",
+        shadowOpacity: 0.8,
+        shadowRadius: 15,
+        padding: 10
+    },
+    modalHeaderView: {
+        width: "100%",
+        height: 50,
+        justifyContent: "center",
+        textAlign: "center"
+    },
+    modalHeaderText: {
+        textAlign: "center",
+        fontSize: 15,
+        fontWeight: "bold",
+        color: "#ffffff"
     },
 
     playTrackPromptView: {

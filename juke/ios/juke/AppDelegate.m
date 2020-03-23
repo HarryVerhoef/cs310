@@ -93,7 +93,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   }
   
   [self.sessionManager application:app openURL:url options:options];
-  [self.sessionManager.session setValuesForKeysWithDictionary:options];
   
   return YES;
 }
@@ -183,6 +182,7 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
   
   self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
+  self.appRemote.delegate = self;
   
   if (!self.sessionManager.session) {
     NSLog(@"No session exists... Initiating a new one...");
@@ -253,15 +253,21 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 }
 
 - (BOOL) playURI:(NSString *)uri {
+  
   __block dispatch_semaphore_t playSema = dispatch_semaphore_create(0);
+  __block bool success = NO;
+  
   if (self.appRemote.isConnected) {
     NSLog(@"appRemote is connected and playURI called so attempting to play track...");
   } else {
     NSLog(@"appRemote is not connected and playURI called so attempting to connect appRemote then play track...");
+
+    [self.appRemote authorizeAndPlayURI:uri];
     self.appRemote.delegate = self;
     [self.appRemote connect];
+    return NO;
   }
-  __block bool success = NO;
+  
   self.appRemote.playerAPI.delegate = self;
   [self.appRemote.playerAPI play:uri callback:^(id  _Nullable result, NSError * _Nullable error) {
     if (error) {

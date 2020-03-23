@@ -65,11 +65,11 @@ export default class Track extends Component {
                     <Text numberOfLines={1} style={(this.props.isSelected) ? styles.trackArtistsSelected : styles.trackArtistsUnSelected}>{(this.props.isArtistString) ? this.props.artists : this.getArtistString(this.props.artists)}</Text>
                 </View>
 
-                <View style={styles.voteBox}>
+                {this.props.showVotes && <View style={styles.voteBox}>
                     <View style={styles.voteView}>
                         <Text style={(this.props.isSelected) ? styles.voteTextSelected : styles.voteTextUnselected}>{this.props.votes}</Text>
                     </View>
-                </View>
+                </View>}
 
             </View>
         )
