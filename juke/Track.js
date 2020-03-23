@@ -116,11 +116,11 @@ const styles = StyleSheet.create({
         color: "#ffffff"
     },
     trackArtistsUnSelected: {
-        color: "#151515",
+        color: "rgba(21,21,21,0.5)",
         fontSize: 12
     },
     trackArtistsSelected: {
-        color: "#ffffff",
+        color: "rgba(255,255,255,0.5)",
         fontSize: 12
     },
 

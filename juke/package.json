@@ -11,8 +11,11 @@
     "querystring": "^0.2.0",
     "react": "16.8.6",
     "react-native": "^0.60.6",
+    "react-native-camera": "^3.21.0",
     "react-native-device-info": "^5.1.0",
     "react-native-gesture-handler": "^1.6.0",
+    "react-native-permissions": "^2.0.10",
+    "react-native-qrcode-scanner": "^1.4.0",
     "react-native-snap-carousel": "^3.8.2",
     "react-navigation": "^3.11.1",
     "socket.io-client": "^2.2.0"

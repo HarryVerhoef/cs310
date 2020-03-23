@@ -47,14 +47,6 @@ export default class Landing extends Component {
     handleKeyboardDidShow = (event) => {
         const keyboardHeight = event.endCoordinates.height;
         this.setState({keyboardShift: keyboardHeight});
-        // Animated.timing(
-        //     this.state.keyboardShift,
-        //     {
-        //       toValue: keyboardHeight,
-        //       duration: 500,
-        //       useNativeDriver: true,
-        //     }
-        // ).start();
     }
 
     handleKeyboardDidHide = (event) => {
@@ -66,7 +58,8 @@ export default class Landing extends Component {
         super(props);
         this.state = {
             text: "",
-            keyboardShift: 0
+            keyboardShift: 0,
+            joinButton: false
         };
     }
 
@@ -91,7 +84,16 @@ export default class Landing extends Component {
                     <View style={styles.joinButtons}>
                         <TextInput
                             style = {styles.keyInput}
-                            onChangeText = {(text) => this.setState({text})}
+                            onChangeText = {(text) => {
+                                this.setState({text});
+
+                                if (text == "") {
+                                    this.setState({joinButton: false});
+                                } else {
+                                    this.setState({joinButton: true});
+                                }
+
+                            }}
                             autoCorrect = {false}
                             autoCapitalize = "characters"
                             placeholder="LOBBY KEY"
@@ -101,43 +103,49 @@ export default class Landing extends Component {
                         </TextInput>
                         <TouchableOpacity
                         onPress = {() => {
-                            const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/join_lobby";
 
-                            fetch(url, {
-                                method: "POST",
-                                headers: {
-                                    Accept: "application/json",
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                },
-                                body: qs.stringify({
-                                    uid: DeviceInfo.getUniqueId(),
-                                    lobby_key: this.state.text
+                            if (this.state.joinButton) {
+
+                                const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/join_lobby";
+
+                                fetch(url, {
+                                    method: "POST",
+                                    headers: {
+                                        Accept: "application/json",
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: qs.stringify({
+                                        uid: DeviceInfo.getUniqueId(),
+                                        lobby_key: this.state.text
+                                    })
                                 })
-                            })
-                            .then((response) => response.json())
-                            .then((responseJson) => {
-                                if (responseJson.lobby_key == this.state.text) {
-                                    navigate("InLobby", {
-                                        spotifySDKBridge: spotifySDKBridge,
-                                        lobby_key: responseJson.lobby_key,
-                                        lobby_name: responseJson.lobby_name,
-                                        active_song: responseJson.active_song,
-                                        votes: responseJson.votes,
-                                        chat: false,
-                                        lyrics: false,
-                                        volume: false
-                                    });
-                                } else {
-                                    Alert.alert("Lobby does not exist");
-                                }
-                            })
-                            .catch((error) => {
-                                Alert.alert("ERROR: " + error);
-                            });
+                                .then((response) => response.json())
+                                .then((responseJson) => {
+                                    if (responseJson.lobby_key == this.state.text) {
+                                        navigate("InLobby", {
+                                            spotifySDKBridge: spotifySDKBridge,
+                                            lobby_key: responseJson.lobby_key,
+                                            lobby_name: responseJson.lobby_name,
+                                            active_song: responseJson.active_song,
+                                            votes: responseJson.votes,
+                                            chat: false,
+                                            lyrics: false,
+                                            volume: false
+                                        });
+                                    } else {
+                                        Alert.alert("Lobby does not exist");
+                                    }
+                                })
+                                .catch((error) => {
+                                    Alert.alert("ERROR: " + error);
+                                });
+                            } else {
+                                navigate("Scanner", spotifySDKBridge);
+                            }
                         }}
                         >
                             <View style = {styles.joinLobbyButton}>
-                                <Text style={styles.joinLobbyText}>JOIN</Text>
+                                <Text style={styles.joinLobbyText}>{this.state.joinButton ? "JOIN" : "QR"}</Text>
                             </View>
                         </TouchableOpacity>
                     </View>
