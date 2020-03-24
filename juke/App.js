@@ -20,7 +20,7 @@ import io from 'socket.io-client/dist/socket.io';
 import {createStackNavigator, createAppContainer} from "react-navigation";
 import { YellowBox } from 'react-native';
 import Landing from "juke/Landing.js";
-import QRScanner from "juke/Scanner.js";
+import Scanner from "juke/Scanner.js";
 import CreateLobby from "juke/CreateLobby.js";
 import HostLobby from "juke/HostLobby.js";
 import InLobby from "juke/InLobby.js";
@@ -33,7 +33,7 @@ const App = createStackNavigator({
     LandingPage: {
         screen: Landing
     },
-    QRScanner: {
+    Scanner: {
         screen: Scanner
     },
     InLobby: {

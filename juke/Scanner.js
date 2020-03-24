@@ -7,11 +7,14 @@ import {
     StyleSheet,
     Alert
 } from "react-native";
-import QRCodeScanner from "react-native-qrcode-scanner";
+import {RNCamera} from "react-native-camera"
+import qs from "query-string";
+import DeviceInfo from "react-native-device-info";
+
 
 var spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
-export default class QRScanner extends Component {
+export default class Scanner extends Component {
 
     static navigationOptions = {
         header: null
@@ -19,49 +22,53 @@ export default class QRScanner extends Component {
 
     constructor(props) {
         super(props);
+        this.state = {joiningLobby: false};
     }
 
-    joinLobby = (e) => {
+    joinLobby = ({data}) => {
 
-        key = e.data;
+        this.setState({joiningLobby: true});
 
         const {navigate} = this.props.navigation;
 
-        Alert.alert(key);
-
         const join_url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/join_lobby";
 
-        fetch(join_url, {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: qs.stringify({
-                uid: DeviceInfo.getUniqueId(),
-                lobby_key: key
+        if (!this.state.joiningLobby) {
+            fetch(join_url, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: qs.stringify({
+                    uid: DeviceInfo.getUniqueId(),
+                    lobby_key: data
+                })
             })
-        })
-        .then((response) => response.json())
-        .then((responseJson) => {
-            if (responseJson.lobby_key == this.state.text) {
-                navigate("InLobby", {
-                    spotifySDKBridge: spotifySDKBridge,
-                    lobby_key: responseJson.lobby_key,
-                    lobby_name: responseJson.lobby_name,
-                    active_song: responseJson.active_song,
-                    votes: responseJson.votes,
-                    chat: false,
-                    lyrics: false,
-                    volume: false
-                });
-            } else {
-                Alert.alert("Lobby does not exist");
-            }
-        })
-        .catch((error) => {
-            Alert.alert("ERROR: " + error);
-        });
+            .then((response) => response.json())
+            .then((responseJson) => {
+                this.setState({joiningLobby: false});
+                if (responseJson.lobby_key == data) {
+                    navigate("InLobby", {
+                        spotifySDKBridge: spotifySDKBridge,
+                        lobby_key: responseJson.lobby_key,
+                        lobby_name: responseJson.lobby_name,
+                        active_song: responseJson.active_song,
+                        votes: responseJson.votes,
+                        chat: false,
+                        lyrics: false,
+                        volume: false
+                    });
+                }
+
+            })
+            .catch((error) => {
+                this.setState({joiningLobby: false});
+                Alert.alert("ERROR: " + error);
+            });
+        }
+
+
 
     }
 
@@ -69,39 +76,23 @@ export default class QRScanner extends Component {
 
         return (
 
-                <QRCodeScanner
-                onRead={async (e) => {
-                    try {
-                        await Linking.openURL(e.data).catch(err =>
-                            console.error('An error occured', err)
-                        ).promise();
-                    } catch (error) {
-                        Alert.alert(error);
-                    }
-
-                }}
-                topContent={
-                    <View style={styles.topContent}>
-                        <Text style={styles.contentText}>Anyone in the lobby can view the QR code by double-tapping the album cover</Text>
-                    </View>
-                }
-                bottomContent={
-                    <View style={styles.bottomContent}>
-                        <Text style={styles.contentText}>Hold your device still and make sure the QR code is visible</Text>
-                    </View>
-                }
-                />
+            <RNCamera
+            ref={ref => {
+                this.camera = ref;
+            }}
+            style={styles.camera}
+            captureAudio={false}
+            onBarCodeRead={this.joinLobby}
+            >
+            </RNCamera>
 
         )
     }
 }
 
 const styles = StyleSheet.create({
-    body: {
-        width: "100%",
-        height: "100%"
+    camera: {
+        flex: 1,
+        width: "100%"
     },
-    contentText: {
-        color: "#151515"
-    }
 });
