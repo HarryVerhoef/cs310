@@ -34,6 +34,10 @@ RCT_EXPORT_METHOD(play:(NSString *)uri callback:(RCTResponseSenderBlock)jsCallba
     jsCallback(@[[NSNull null], result]);
   });
   
+  
+//  NSNumber *result = [NSNumber numberWithBool:[self.appDelegate playURI:uri]];
+//  jsCallback(@[[NSNull null], result]);
+  
 }
 
 RCT_EXPORT_METHOD(skip:(RCTResponseSenderBlock)jsCallback) {

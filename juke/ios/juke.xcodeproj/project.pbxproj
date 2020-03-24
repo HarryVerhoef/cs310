@@ -17,6 +17,7 @@
 		3601D17A65E66755E507D84E /* libPods-juke-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AF33666049BD140ADA548F8A /* libPods-juke-tvOS.a */; };
 		3FBBC3E5152849F72BB67465 /* libPods-juke.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D1187EA9103B9E0B178E4D4A /* libPods-juke.a */; };
 		7FB881C1C6E717C38229AF40 /* libPods-juke-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B1D29A5ADD67E527523869C5 /* libPods-juke-tvOSTests.a */; };
+		BD0B4804242A444000B6C594 /* SpotifyiOS.framework in Resources */ = {isa = PBXBuildFile; fileRef = BD0B4803242A444000B6C594 /* SpotifyiOS.framework */; };
 		BD1FD70322FB0C4500A11AE1 /* libRNGestureHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BD1FD70222FB0C4500A11AE1 /* libRNGestureHandler.a */; };
 		BD1FD70A22FDCA4E00A11AE1 /* SpotifySDKBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1FD70922FDCA4E00A11AE1 /* SpotifySDKBridge.m */; };
 		BDF2CA5B22F9BB0600A18C5B /* SpotifyiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDF2CA5A22F9BB0600A18C5B /* SpotifyiOS.framework */; };
@@ -67,6 +68,7 @@
 		AF33666049BD140ADA548F8A /* libPods-juke-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-juke-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1D29A5ADD67E527523869C5 /* libPods-juke-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-juke-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B365AF52B38C5CE4FE0BC3C0 /* Pods-juke.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-juke.debug.xcconfig"; path = "Target Support Files/Pods-juke/Pods-juke.debug.xcconfig"; sourceTree = "<group>"; };
+		BD0B4803242A444000B6C594 /* SpotifyiOS.framework */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = SpotifyiOS.framework; path = ../../../../Desktop/SpotifyiOS.framework; sourceTree = "<group>"; };
 		BD1FD70022FB0C2500A11AE1 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD1FD70222FB0C4500A11AE1 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD1FD70922FDCA4E00A11AE1 /* SpotifySDKBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SpotifySDKBridge.m; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BD0B4803242A444000B6C594 /* SpotifyiOS.framework */,
 				BD1FD70222FB0C4500A11AE1 /* libRNGestureHandler.a */,
 				BD1FD70022FB0C2500A11AE1 /* libRNGestureHandler.a */,
 				BDF2CA5A22F9BB0600A18C5B /* SpotifyiOS.framework */,
@@ -367,6 +370,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				BD0B4804242A444000B6C594 /* SpotifyiOS.framework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

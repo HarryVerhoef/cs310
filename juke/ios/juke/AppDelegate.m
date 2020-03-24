@@ -93,6 +93,11 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
   }
   
   [self.sessionManager application:app openURL:url options:options];
+  NSLog(@"OPTIONS: %@", options);
+  if (self.appRemote.isConnected) {
+    [self.sessionManager.session setValuesForKeysWithDictionary:options];
+  }
+  
   
   return YES;
 }
@@ -254,7 +259,6 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
 - (BOOL) playURI:(NSString *)uri {
   
-  __block dispatch_semaphore_t playSema = dispatch_semaphore_create(0);
   __block bool success = NO;
   
   if (self.appRemote.isConnected) {
@@ -276,11 +280,9 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
       NSLog(@"Success on play callback...");
       success = YES;
     }
-    dispatch_semaphore_signal(playSema);
   }];
   
-  dispatch_semaphore_wait(playSema, DISPATCH_TIME_FOREVER);
-  return success;
+  return YES;
   
 }
 
