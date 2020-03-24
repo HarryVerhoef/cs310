@@ -1,29 +1,23 @@
-import React, {Component} from 'react';
+import React, {Component} from "react";
 import {
-    SafeAreaView,
     StyleSheet,
     ScrollView,
     View,
     Text,
-    StatusBar,
     TextInput,
     Button,
     Alert,
-    TouchableHighlight,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    Touchable,
     NativeModules,
-    Platform,
     Image,
     FlatList,
     Dimensions,
     Modal
-    } from 'react-native';
+} from "react-native";
 import ProgressBar from "./ProgressBar.js";
 import Track from "./Track.js";
-window.navigator.userAgent = 'react-native';
-import {createStackNavigator, createAppContainer} from "react-navigation";
+window.navigator.userAgent = "react-native";
 import DeviceInfo from "react-native-device-info";
 import {TapGestureHandler, State} from "react-native-gesture-handler";
 import qs from "query-string";
@@ -38,15 +32,12 @@ export default class HostLobby extends Component {
 
     doubleTapRef = React.createRef();
 
-
     ws = new WebSocket("https://5b5gjj48d4.execute-api.us-west-2.amazonaws.com/epsilon-2?uid=" + DeviceInfo.getUniqueId());
 
     constructor(props) {
         super(props);
         this.state = {
             recommendations: [],
-            lobby: {},
-            selected: {},
             activeSong: {
                 isSet: false,
                 name: "<SongName>",
@@ -82,12 +73,10 @@ export default class HostLobby extends Component {
         })
         .then((response) => response.json())
         .then((responseJson) => {
-            // Alert.alert("RECOMMENDATIONS: " + JSON.stringify(responseJson.L));
             this.setState({
                 recommendations: responseJson.recommendations.L,
                 userVoteWeighting: parseFloat(responseJson.user_weighting),
                 voteEnabled: true
-                // recommendations_ready: true
             });
         })
         .catch((error) => {
@@ -98,8 +87,6 @@ export default class HostLobby extends Component {
     getRecommendations(access_token, callback) {
 
         const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_recommendations";
-
-        // this.setState({recommendations_ready: false});
 
         fetch(url, {
             method: "POST",
@@ -114,9 +101,6 @@ export default class HostLobby extends Component {
         })
         .then((response) => response.json())
         .then((responseJson) => {
-            // this.setState({
-            //     voteEnabled: true
-            // });
             if (callback) {
                 callback();
             }
@@ -133,13 +117,11 @@ export default class HostLobby extends Component {
             } else {
                 this.setState({show_description: true});
             }
-
         }
     }
 
     endVoting() {
 
-        /* Disable the voting for this song */
         this.setState({voteEnabled: false});
         this.setState({userVoteIndex: -1});
 
@@ -173,8 +155,6 @@ export default class HostLobby extends Component {
                     } else {
                         Alert.alert("ERROR: " + responseJson);
                     }
-
-
                 })
                 .catch((error) => {
                     Alert.alert("ERROR: " + error);
@@ -198,7 +178,6 @@ export default class HostLobby extends Component {
 
         const track_features_url = "https://api.spotify.com/v1/audio-features/" + this.state.activeSong.id
 
-        /* Set the active track to that which has just been played */
         const set_track_url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/set_track";
 
         fetch(set_track_url, {
@@ -219,7 +198,6 @@ export default class HostLobby extends Component {
         })
         .then((response) => response.json())
         .then((responseJson) => {
-            /* Send WS packet to aws */
             this.ws.send(JSON.stringify({
                 action: "next",
                 uid: DeviceInfo.getUniqueId(),
@@ -262,11 +240,11 @@ export default class HostLobby extends Component {
     showRecommendations = (showVotes=true, dark=false) => {
 
         return (<FlatList
-            data = {this.state.recommendations}
-            extraData = {this.state}
-            renderItem = {({item, index}) => (
+            data={this.state.recommendations}
+            extraData={this.state}
+            renderItem={({item, index}) => (
                 <TouchableOpacity
-                    onPress = {() => {
+                    onPress={() => {
 
                         this.setState({modalVisible: false});
 
@@ -315,7 +293,7 @@ export default class HostLobby extends Component {
 
                 </TouchableOpacity>
             )}
-            keyExtractor = {item => item.M.track_id.S}
+            keyExtractor={item => item.M.track_id.S}
         />)
     }
 
@@ -339,13 +317,11 @@ export default class HostLobby extends Component {
                 });
                 this.setState({thumb_status: "neutral"});
 
-                /* Set timer to last 90% of the currently playing track */
                 clearTimeout(this.timer);
                 clearTimeout(this.next_song_timer);
                 this.timer = setInterval(() => this.endVoting(), 0.8 * length);
                 this.next_song_timer = setInterval(() => this.nextSong(), length);
 
-                /* Set the active track to that which has just been played */
                 const set_track_url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/set_track";
 
                 fetch(set_track_url, {
@@ -444,20 +420,16 @@ export default class HostLobby extends Component {
         };
 
         this.ws.onmessage = (evt) => {
+
             var msg = JSON.parse(evt.data);
 
             if (msg.action == "vote") {
-
                 votes = msg.body;
-
                 let newVotes = Object.assign({}, this.state.votes);
-
                 votes.forEach((item) => {
                     newVotes[item.track_id.S] = parseFloat(item.vote_no.N);
                 });
-
                 this.setState({votes: newVotes});
-
             } else if (msg.action == "next") {
                 this.setState({activeSong: msg.body});
             }
@@ -483,10 +455,6 @@ export default class HostLobby extends Component {
 
     componentWillUnmount() {
 
-        /* Called when react-navigation pops HostLobby component off of navigation stack */
-
-        /* Send HTTP request to delete current lobby from DynamoDB */
-
         const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/delete_lobby";
 
         fetch(url, {
@@ -507,8 +475,6 @@ export default class HostLobby extends Component {
     }
 
     render() {
-
-
 
         const {navigation} = this.props;
         const uid = DeviceInfo.getUniqueId();
@@ -544,60 +510,36 @@ export default class HostLobby extends Component {
                     waitFor={this.doubleTapRef}
                     numberOfTaps={2}
                     onHandlerStateChange={this._displayDescription}>
-                    <View style={[
-                        {width: Dimensions.get("window").width, height: Dimensions.get("window").width},
-                        styles.playerView]}>
+                    <View style={styles.playerView}>
 
                         {!this.state.activeSong.isSet && <View style={styles.playTrackPromptView}>
                             <Text style={styles.playTrackPromptText}>Please select a track to be played...</Text>
                         </View>}
 
-                        <View style = {styles.TrackImageView}>
+                        <View style={styles.TrackImageView}>
 
                             {this.state.activeSong.isSet && <Image
-                                style={{
-                                    position: "absolute",
-                                    width: Dimensions.get("window").width,
-                                    height: Dimensions.get("window").width,
-                                    left: 0,
-                                    top: 0,
-                                    zIndex: 100
-                                }}
-                                source = {require("./img/black-shadow-png-4-down.png")}
+                                style={styles.shadowDown}
+                                source={require("./img/black-shadow-png-4-down.png")}
                             />}
 
                             {this.state.activeSong.isSet && <Image
-                                style={{
-                                    position: "absolute",
-                                    width: Dimensions.get("window").width,
-                                    height: (Dimensions.get("window").width * 0.15) + (Dimensions.get("window").width * 1.15),
-                                    left: 0,
-                                    top: -(Dimensions.get("window").width * 0.15),
-                                    zIndex: 100
-                                }}
-                                source = {require("./img/black-shadow-png-4.png")}
+                                style={styles.shadowUp}
+                                source={require("./img/black-shadow-png-4.png")}
                             />}
 
 
-                            {this.state.activeSong.isSet && <View style = {styles.trackImageWrapper}>
-
-                            <Image
-                                style = {[
-                                    {width: 1.4 * Dimensions.get("window").width,
-                                    height: 1.4 * Dimensions.get("window").width,
-                                    top: -0.2 * Dimensions.get("window").width,
-                                    left: -0.2 * Dimensions.get("window").width
-                                    },
-                                    styles.playlistImage]}
-                                source = {{uri: this.state.activeSong.uri}}
-                                blurRadius={10}
-                            />
+                            {this.state.activeSong.isSet && <View style={styles.trackImageWrapper}>
+                                <Image
+                                    style={styles.playlistImage}
+                                    source={{uri: this.state.activeSong.uri}}
+                                    blurRadius={10}
+                                />
                             </View>}
 
                             {this.state.activeSong.isSet && <View style={[
                                 styles.smallImage,
-                                {top: (Dimensions.get("window").width - 190) / 2},
-                                {left: (Dimensions.get("window").width - 200) / 2}
+
                             ]}>
                                 {!this.state.show_description && <Image
                                     style={styles.smallImageContent}
@@ -613,12 +555,12 @@ export default class HostLobby extends Component {
                             </View>}
                         </View>
 
-                        <View style = {styles.lobbyInfo}>
-                            <Text style = {styles.lobbyName}>{lobbyInfo.name}</Text>
-                            <Text style = {styles.lobbyKey}>Join with: {lobbyInfo.key}</Text>
+                        <View style={styles.lobbyInfo}>
+                            <Text style={styles.lobbyName}>{lobbyInfo.name}</Text>
+                            <Text style={styles.lobbyKey}>Join with: {lobbyInfo.key}</Text>
                         </View>
 
-                        <View style= {styles.trackInfo}>
+                        <View style={styles.trackInfo}>
                             {this.state.isMusicPlaying && <Text style={styles.trackName} numberOfLines={1}>{this.state.activeSong.name}</Text>}
                             {this.state.isMusicPlaying && <Text style={styles.trackArtists} numberOfLines={1}>{this.state.activeSong.artists}</Text>}
                         </View>
@@ -626,60 +568,43 @@ export default class HostLobby extends Component {
                     </View>
                 </TapGestureHandler>
 
-                <View style = {[
-                    {width: Dimensions.get("window").width, height:  0.15 * Dimensions.get("window").width},
-                    styles.SongInfo]}>
+                <View style={styles.SongInfo}>
 
-                    <View style = {styles.thumbsDownView}>
-                        <TouchableWithoutFeedback
-                            onPress = {() => {
-                                this.thumbs("down");
-                            }}
-                        >
+                    <View style={styles.thumbsDownView}>
+                        <TouchableWithoutFeedback onPress={() => { this.thumbs("down"); }}>
                             <Image
-                                style = {styles.thumbsDown}
-                                source = {(this.state.thumb_status == "down") ? require("./img/thumbs-down-active.png") : require("./img/thumbs-down-white.png")}
+                                style={styles.thumbsDown}
+                                source={(this.state.thumb_status == "down") ? require("./img/thumbs-down-active.png") : require("./img/thumbs-down-white.png")}
                             />
                         </TouchableWithoutFeedback>
                     </View>
 
-
-                    <View style = {styles.SongInfoView}>
-
+                    <View style={styles.SongInfoView}>
                         <ProgressBar
-                            enabled = {this.state.activeSong.isSet}
-                            time = {this.state.activeSong.length}
-                            factor = {500}
-                            length = {200}
-                            height = {5}
-                            barColor = {"#ffffff"}
-                            progressColor = {"#cc5555"}
-                            time_invoked = {(this.state.activeSong.isSet) ? this.state.activeSong.time_invoked : Date.now()}
+                        enabled={this.state.activeSong.isSet}
+                        time={this.state.activeSong.length}
+                        factor={500}
+                        length={200}
+                        height={5}
+                        barColor={"#ffffff"}
+                        progressColor={"#cc5555"}
+                        time_invoked={(this.state.activeSong.isSet) ? this.state.activeSong.time_invoked : Date.now()}
                         >
                         </ProgressBar>
-
                     </View>
 
-
-                    <View style = {styles.thumbsUpView}>
-                        <TouchableWithoutFeedback
-                            onPress = {() => {
-                                this.thumbs("up");
-                            }}
-                        >
+                    <View style={styles.thumbsUpView}>
+                        <TouchableWithoutFeedback onPress={() => { this.thumbs("up"); }}>
                             <Image
-                                style = {styles.thumbsUp}
-                                source = {(this.state.thumb_status == "up") ? require("./img/thumbs-up-active.png") : require("./img/thumbs-up-white.png")}
+                                style={styles.thumbsUp}
+                                source={(this.state.thumb_status == "up") ? require("./img/thumbs-up-active.png") : require("./img/thumbs-up-white.png")}
                             />
                         </TouchableWithoutFeedback>
                     </View>
 
                 </View>
 
-                <View style = {[
-                    {width: Dimensions.get("window").width, height: Dimensions.get("window").height - (1.35 * Dimensions.get("window").width)},
-                    styles.Recommendations
-                ]}>
+                <View style={styles.Recommendations}>
 
                     {this.state.voteEnabled && !this.state.recommendations_ready && <View style={styles.recommendationPlaceholder}>
                         <Text style={styles.defaultRecommendationText}>Loading Recommendations...</Text>
@@ -745,6 +670,8 @@ const styles = StyleSheet.create({
     },
     playerView: {
         position: "relative",
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").width,
         justifyContent: "space-between",
         backgroundColor: "#666666"
     },
@@ -833,8 +760,32 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontWeight: "bold"
     },
+    shadowDown: {
+        position: "absolute",
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").width,
+        left: 0,
+        top: 0,
+        zIndex: 100
+    },
+    shadowUp: {
+        position: "absolute",
+        width: Dimensions.get("window").width,
+        height: (Dimensions.get("window").width * 0.15) + (Dimensions.get("window").width * 1.15),
+        left: 0,
+        top: -(Dimensions.get("window").width * 0.15),
+        zIndex: 100
+    },
+    playlistImage: {
+        width: 1.4 * Dimensions.get("window").width,
+        height: 1.4 * Dimensions.get("window").width,
+        top: -0.2 * Dimensions.get("window").width,
+        left: -0.2 * Dimensions.get("window").width
+    },
 
     SongInfo: {
+        width: Dimensions.get("window").width,
+        height:  0.15 * Dimensions.get("window").width,
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
@@ -842,7 +793,8 @@ const styles = StyleSheet.create({
     },
 
     Recommendations: {
-        flex: 2.5,
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").height - (1.35 * Dimensions.get("window").width),
         backgroundColor: "#151515",
         zIndex: 3
     },

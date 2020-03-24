@@ -16,7 +16,6 @@ import {
     Switch
 } from "react-native";
 window.navigator.userAgent = "react-native";
-import io from "socket.io-client/dist/socket.io";
 import Carousel from "react-native-snap-carousel";
 import DeviceInfo from "react-native-device-info";
 import {TapGestureHandler, State} from "react-native-gesture-handler";
@@ -59,10 +58,7 @@ export default class CreateLobby extends Component {
     carouselRenderItem({item, index}) {
         return (
             <View style={styles.playlistCard}>
-                <Image
-                    style={styles.playlistImage}
-                    source={{uri: item.images[0].url}}
-                />
+                <Image style={styles.playlistImage} source={{uri: item.images[0].url}} />
             </View>
         );
     }
@@ -260,7 +256,7 @@ export default class CreateLobby extends Component {
                         </View>
                     </TouchableOpacity>
                 </View>
-                
+
             </View>
         );
     }
@@ -299,11 +295,9 @@ const styles = StyleSheet.create({
     },
 
     lobbyName: {
-
         position: "absolute",
         width: "100%",
         height: 50,
-
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
@@ -441,8 +435,6 @@ const styles = StyleSheet.create({
         flexDirection: "row"
     },
 
-
-
     createLobby: {
         width: "100%",
         height: 90,
@@ -465,7 +457,4 @@ const styles = StyleSheet.create({
         color: "#ffffff",
         textAlign: "center"
     }
-
-
-
 });
