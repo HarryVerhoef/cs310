@@ -605,12 +605,11 @@ export default class HostLobby extends Component {
                                     >
                                 </Image>}
 
-                                {this.state.show_description && <ScrollView
+                                {this.state.show_description && <Image
                                     style={styles.smallImageContent}
-                                    source={{uri: this.state.activeSong.uri}}
+                                    source={{uri: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + lobbyInfo.key}}
                                     >
-                                    <Text style={styles.descriptionText}>{this.state.track_description.description}</Text>
-                                </ScrollView>}
+                                    </Image>}
                             </View>}
                         </View>
 

@@ -1,26 +1,22 @@
-import React, {Component} from 'react';
+import React, {Component} from "react";
 import {
-    SafeAreaView,
     StyleSheet,
     ScrollView,
     View,
     Text,
-    StatusBar,
     TextInput,
     Button,
     Alert,
     TouchableOpacity,
     NativeModules,
-    Platform,
-    Linking,
     Modal,
     FlatList,
     Image,
     Dimensions,
     Switch
-    } from 'react-native';
-window.navigator.userAgent = 'react-native';
-import io from 'socket.io-client/dist/socket.io';
+} from "react-native";
+window.navigator.userAgent = "react-native";
+import io from "socket.io-client/dist/socket.io";
 import Carousel from "react-native-snap-carousel";
 import DeviceInfo from "react-native-device-info";
 import {TapGestureHandler, State} from "react-native-gesture-handler";
