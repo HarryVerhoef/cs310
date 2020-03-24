@@ -37,7 +37,6 @@ export default class CreateLobby extends Component {
             isConnectedToSpotify: false,
             playlistModal: false,
             playlists: [],
-            isSocketConnected: false,
 
 
             activePlaylist: {
@@ -51,10 +50,6 @@ export default class CreateLobby extends Component {
         };
     }
 
-    setModableVisible(visible) {
-        this.setState({modalVisible: visible});
-    }
-
     togglePlaylistModal(data) {
         this.setState({activePlaylist: data[0]});
         this.setState({playlists: data});
@@ -65,22 +60,22 @@ export default class CreateLobby extends Component {
         return (
             <View style={styles.playlistCard}>
                 <Image
-                    style = {styles.playlistImage}
-                    source = {{uri: item.images[0].url}}
+                    style={styles.playlistImage}
+                    source={{uri: item.images[0].url}}
                 />
             </View>
         );
     }
 
     render() {
+
         const {navigate} = this.props.navigation;
         spotifySDKBridge = NativeModules.SpotifySDKBridge;
 
         return (
-            <View style = {styles.createLobbyBody}>
+            <View style={styles.createLobbyBody}>
 
-
-                <View style = {styles.lobbyName}>
+                <View style={styles.lobbyName}>
                     <TextInput
                     style={styles.lobbyNameInput}
                     onChangeText={(text) => {this.setState({lobbyName: text})}}
@@ -89,26 +84,21 @@ export default class CreateLobby extends Component {
                     autoCorrect={false}
                     maxLength={40}
                     >
-                        <Text style={styles.lobbyNameText}>
-                        {this.state.lobbyName}
-                        </Text>
+                        <Text style={styles.lobbyNameText}>{this.state.lobbyName}</Text>
                     </TextInput>
                 </View>
 
-                <View style={[
-                    {width: Dimensions.get("window").width, height: Dimensions.get("window").width},
-                    styles.playerView]}>
-
+                <View style={styles.playerView}>
                     {!this.state.isConnectedToSpotify && <TouchableOpacity
-                        onPress = {() => {
-                            spotifySDKBridge.auth((error, result) => {
-                                if (error) {
-                                    Alert.alert("Error authenticating: " + error);
-                                } else {
-                                    this.setState({isConnectedToSpotify: true});
-                                }
-                            });
-                        }}
+                    onPress={() => {
+                        spotifySDKBridge.auth((error, result) => {
+                            if (error) {
+                                Alert.alert("Error authenticating: " + error);
+                            } else {
+                                this.setState({isConnectedToSpotify: true});
+                            }
+                        });
+                    }}
                     >
                         <View style={styles.spotifyButton}>
                             <Text style={styles.spotifyButtonText}>CONNECT TO SPOTIFY</Text>
@@ -117,71 +107,46 @@ export default class CreateLobby extends Component {
 
 
                     {this.state.isConnectedToSpotify  && !this.state.playlistModal && <TouchableOpacity
-                        onPress = {() => {
-                            spotifySDKBridge.getAccessToken((error, result) => {
-                                if (error) {
-                                    Alert.alert(error);
-                                } else {
+                    onPress={() => {
+                        spotifySDKBridge.getAccessToken((error, result) => {
+                            if (error) {
+                                Alert.alert(error);
+                            } else {
 
-                                    const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_playlists";
+                                const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/get_playlists";
 
-                                    fetch(url, {
-                                        method: "post",
-                                        headers: {
-                                            Accept: "application/json",
-                                            "Content-Type": "application/x-www-form-urlencoded"
-                                        },
-                                        body: qs.stringify({
-                                            "uid": DeviceInfo.getUniqueId(),
-                                            "access_token": result
-                                        }),
-                                    })
-                                    .then((response) => response.json())
-                                    .then((responseJson) => {
-                                        this.togglePlaylistModal(responseJson);
-                                    })
-                                    .catch((error) => {
-                                        Alert.alert("Error while getting playlists: " + error);
-                                    });
-                                }
-                            });
-
-                        }}
-
-                    >
+                                fetch(url, {
+                                    method: "post",
+                                    headers: {
+                                        Accept: "application/json",
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: qs.stringify({
+                                        "uid": DeviceInfo.getUniqueId(),
+                                        "access_token": result
+                                    }),
+                                })
+                                .then((response) => response.json())
+                                .then((responseJson) => {
+                                    this.togglePlaylistModal(responseJson);
+                                })
+                                .catch((error) => {
+                                    Alert.alert("Error while getting playlists: " + error);
+                                });
+                            }
+                        });
+                    }}>
                         <View style={styles.spotifyButton}>
                             <Text style={styles.spotifyButtonText}>CHOOSE PLAYLIST</Text>
                         </View>
                     </TouchableOpacity>}
 
-                    {this.state.playlistModal && <View style = {styles.TrackImageView}>
+                    {this.state.playlistModal && <View style={styles.TrackImageView}>
 
+                        <Image style={styles.shadowUp} source={require("./img/black-shadow-png-4.png")} />
 
-                        <Image
-                            style={{
-                                position: "absolute",
-                                width: Dimensions.get("window").width,
-                                height: (Dimensions.get("window").width * 0.15) + (Dimensions.get("window").width * 1.15),
-                                left: 0,
-                                top: -(Dimensions.get("window").width * 0.15),
-                                zIndex: 100
-                            }}
-                            source = {require("./img/black-shadow-png-4.png")}
-                        />
-
-
-                        <View style = {styles.trackImageWrapper}>
-                            <Image
-                                style = {[
-                                    {width: 1.4 * Dimensions.get("window").width,
-                                    height: 1.4 * Dimensions.get("window").width,
-                                    top: -0.2 * Dimensions.get("window").width,
-                                    left: -0.2 * Dimensions.get("window").width
-                                    },
-                                    styles.playlistImageBlurred]}
-                                source = {{uri: this.state.activePlaylist.images[0].url}}
-                                blurRadius={10}
-                            />
+                        <View style={styles.trackImageWrapper}>
+                            <Image style={styles.playlistImageBlurred} source={{uri: this.state.activePlaylist.images[0].url}} blurRadius={10} />
                         </View>
 
                         <View style={styles.setPlaylistCarousel}>
@@ -191,7 +156,6 @@ export default class CreateLobby extends Component {
                                 renderItem = {this.carouselRenderItem}
                                 sliderWidth = {Dimensions.get("window").width}
                                 itemWidth = {200}
-
                                 activeSlideAlignment = "center"
                                 inactiveSlideScale = {0.8}
                                 inactiveSlideOpacity = {0.6}
@@ -201,116 +165,102 @@ export default class CreateLobby extends Component {
                                 }}
                             />
                         </View>
-
                     </View>}
 
-                    <View style = {styles.playlistInfo}>
-                        <Text style = {styles.playlistInfoName}>{this.state.activePlaylist.name}</Text>
-                        <Text style = {styles.playlistInfoSongs}>{this.state.activePlaylist.tracks.total} Songs</Text>
+                    <View style={styles.playlistInfo}>
+                        <Text style={styles.playlistInfoName}>{this.state.activePlaylist.name}</Text>
+                        <Text style={styles.playlistInfoSongs}>{this.state.activePlaylist.tracks.total} Songs</Text>
                     </View>
 
                 </View>
 
+                <View style={styles.lobbySettings}>
 
+                    <View style={styles.lobbySettingsWrapper}>
 
-
-
-
-
-
-
-
-                <View style = {styles.lobbySettings}>
-
-
-
-                    <View style = {styles.lobbySettingsWrapper}>
-
-                        <View style = {styles.lobbySwitchView}>
+                        <View style={styles.lobbySwitchView}>
                             <Switch
-                                value = {this.state.chatRoom}
-                                onValueChange = {(value) => {
+                                value={this.state.chatRoom}
+                                onValueChange={(value) => {
                                     this.setState({chatRoom: value});
                                 }}
-                                 style = {{marginLeft: 20}}
+                                style={{marginLeft: 20}}
                             />
                             <Text style = {{marginLeft: 10}}>CHAT</Text>
                         </View>
 
                         <View style = {styles.lobbySwitchView}>
                             <Switch
-                                value = {this.state.lyrics}
-                                onValueChange = {(value) => {
+                                value={this.state.lyrics}
+                                onValueChange={(value) => {
                                     this.setState({lyrics: value});
                                 }}
-                                 style = {{marginLeft: 20}}
+                                style={{marginLeft: 20}}
                             />
-                            <Text style = {{marginLeft: 10}}>DESCRIPTION</Text>
+                            <Text style={{marginLeft: 10}}>DESCRIPTION</Text>
                         </View>
 
-                        <View style = {styles.lobbySwitchView}>
+                        <View style={styles.lobbySwitchView}>
                             <Switch
-                                value = {this.state.volumeControl}
-                                onValueChange = {(value) => {
+                                value={this.state.volumeControl}
+                                onValueChange={(value) => {
                                     this.setState({volumeControl: value});
                                 }}
-                                 style = {{marginLeft: 20}}
+                                style={{marginLeft: 20}}
                             />
-                            <Text style = {{marginLeft: 10}}>VOLUME</Text>
+                            <Text style={{marginLeft: 10}}>VOLUME</Text>
                         </View>
 
                     </View>
+
                 </View>
 
-                <View style = {styles.createLobby}>
+                <View style={styles.createLobby}>
                     <TouchableOpacity
-                        onPress = {() => {
+                    onPress={() => {
 
-                            if (!this.state.lobbyName) {
-                                Alert.alert("Playlist must have a name");
-                                return;
+                        if (!this.state.lobbyName) {
+                            Alert.alert("Playlist must have a name");
+                            return;
+                        }
+
+                        spotifySDKBridge.getAccessToken((error, result) => {
+                            if (error) {
+                                Alert.alert("ERROR: " + error);
+                            } else {
+                                const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby";
+                                fetch(url, {
+                                    method: "POST",
+                                    headers: {
+                                        Accept: "application/json",
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: qs.stringify({
+                                        uid: DeviceInfo.getUniqueId(),
+                                        name: this.state.lobbyName,
+                                        playlist_id: this.state.activePlaylist.id,
+                                        chat: this.state.chatRoom,
+                                        lyrics: this.state.lyrics,
+                                        volume: this.state.volumeControl,
+                                        access_token: result
+                                    })
+                                })
+                                .then((response) => response.json())
+                                .then((responseJson) => {
+                                    navigate("HostLobby", responseJson);
+                                })
+                                .catch((error) => {
+                                    Alert.alert(error);
+                                });
                             }
-
-                            spotifySDKBridge.getAccessToken((error, result) => {
-                                if (error) {
-                                    Alert.alert("ERROR: " + error);
-                                } else {
-                                    const url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/make_lobby";
-                                    fetch(url, {
-                                        method: "POST",
-                                        headers: {
-                                            Accept: "application/json",
-                                            "Content-Type": "application/x-www-form-urlencoded"
-                                        },
-                                        body: qs.stringify({
-                                            uid: DeviceInfo.getUniqueId(),
-                                            name: this.state.lobbyName,
-                                            playlist_id: this.state.activePlaylist.id,
-                                            chat: this.state.chatRoom,
-                                            lyrics: this.state.lyrics,
-                                            volume: this.state.volumeControl,
-                                            access_token: result
-                                        })
-                                    })
-                                    .then((response) => response.json())
-                                    .then((responseJson) => {
-                                        navigate("HostLobby", responseJson);
-                                    })
-                                    .catch((error) => {
-                                        Alert.alert(error);
-                                    });
-                                }
-                            });
-
-
-                        }}
-                    >
-                        <View style = {styles.createLobbyButton}>
-                            <Text style = {styles.createLobbyText}>CREATE LOBBY</Text>
+                        });
+                    }}>
+                        <View style={styles.createLobbyButton}>
+                            <Text style={styles.createLobbyText}>CREATE LOBBY</Text>
                         </View>
-
                     </TouchableOpacity>
                 </View>
+                
             </View>
         );
     }
@@ -324,6 +274,8 @@ const styles = StyleSheet.create({
 
     playerView: {
         position: "relative",
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").width,
         justifyContent: "center",
         alignItems: "center",
         textAlign: "center",
@@ -429,6 +381,20 @@ const styles = StyleSheet.create({
     playlistImage: {
         width: 200,
         height: 200
+    },
+    shadowUp: {
+        position: "absolute",
+        width: Dimensions.get("window").width,
+        height: (Dimensions.get("window").width * 0.15) + (Dimensions.get("window").width * 1.15),
+        left: 0,
+        top: -(Dimensions.get("window").width * 0.15),
+        zIndex: 100
+    },
+    playlistImageBlurred: {
+        width: 1.4 * Dimensions.get("window").width,
+        height: 1.4 * Dimensions.get("window").width,
+        top: -0.2 * Dimensions.get("window").width,
+        left: -0.2 * Dimensions.get("window").width
     },
 
     lobbySettings: {
