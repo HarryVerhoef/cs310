@@ -11,6 +11,8 @@ exports.handler = async (event) => {
     /*
     ** 1. Check if lobby exists
     ** 2. Add new item to device table
+    ** 3. Get current votes
+    ** 4. Return stringified response object
     */
 
 
@@ -21,12 +23,15 @@ exports.handler = async (event) => {
         var lobby_res = await dynamo.getItem({
             TableName: "lobby",
             Key: {
-                "lobby_key": {"S": event.lobby_key}
+                "lobby_key": {"S": req.lobby_key}
             }
         }).promise();
 
-        if (lobby_res.Item) {
-            console.log("Lobby exists: " + lobby_res.Item);
+        let lobby = lobby_res.Item;
+        console.log(lobby);
+
+        if (lobby) {
+            console.log("Lobby exists: " + JSON.stringify(lobby));
 
             /* (2) Add new item to device table */
 
@@ -34,15 +39,47 @@ exports.handler = async (event) => {
                 TableName: "device",
                 Item: {
                     "device_id": {"S": req.uid},
-                    "lobby_key": {"S": req.lobby_key}
+                    "lobby_key": {"S": lobby.lobby_key.S},
+                    "user_weighting": {"N": "1"}
                 },
-                ReturnValues: "ALL_NEW"
+                ReturnValues: "NONE"
             }).promise();
+
+            /* (4) Get current votes */
+
+            let vote_array_res = await dynamo.query({
+                TableName: "lobby-track",
+                ProjectionExpression: "track_id, vote_no",
+                KeyConditionExpression: "lobby_key = :lk",
+                ExpressionAttributeValues: {
+                    ":lk": {"S": lobby.lobby_key.S}
+                }
+            }).promise();
+
+            let vote_array = vote_array_res.Items;
+
+            /* (5) Update number of users in lobby */
+
+            await dynamo.updateItem({
+                TableName: "lobby",
+                Key: {
+                    lobby_key: {"S": lobby.lobby_key.S}
+                },
+                UpdateExpression: "ADD num_users :v",
+                ExpressionAttributeValues: {
+                    ":v": {"N": "1"}
+                }
+            }).promise();
+
+            /* (5) Return stringified response  */
 
             res = {
                 statusCode: 200,
                 body: JSON.stringify({
-                    lobby_key: new_device_res.Attributes.lobby_key
+                    lobby_key: lobby.lobby_key.S,
+                    lobby_name: lobby.lobby_name.S,
+                    active_song: lobby.active_track.M,
+                    votes: vote_array
                 })
             };
 
@@ -71,4 +108,4 @@ exports.handler = async (event) => {
         return res;
 
     }
-}
+};

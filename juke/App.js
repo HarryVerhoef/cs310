@@ -24,6 +24,7 @@ import Scanner from "juke/Scanner.js";
 import CreateLobby from "juke/CreateLobby.js";
 import HostLobby from "juke/HostLobby.js";
 import InLobby from "juke/InLobby.js";
+import ChatRoom from "juke/ChatRoom.js";
 
 YellowBox.ignoreWarnings([
   'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
@@ -44,6 +45,9 @@ const App = createStackNavigator({
     },
     HostLobby: {
         screen: HostLobby
+    },
+    ChatRoom: {
+        screen: ChatRoom
     }
 });
 

@@ -26,7 +26,8 @@ exports.handler = async (event, context, callback) => {
             TableName: "lobby-connection",
             Item: {
                 "lobby_key": {"S": lobby_key},
-                "connection_id": {"S": event.requestContext.connectionId}
+                "connection_id": {"S": event.requestContext.connectionId},
+                "device_id": {"S": event.queryStringParameters.uid}
             }
         };
 

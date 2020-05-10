@@ -42,7 +42,8 @@ exports.handler = async (event, context, callback) => {
             Item: {
                 "device_id": {"S": req.uid},
                 "spotify_user_id": {"S": spotify_id},
-                "access_token": {"S": req.access_token}
+                "access_token": {"S": req.access_token},
+                "user_weighting": {"N": "1"}
             }
         }, (err, data) => {
             if (err) {

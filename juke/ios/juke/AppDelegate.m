@@ -182,9 +182,8 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
 
 
 - (BOOL) invokeAuthModal {
-  NSLog(@"auth entered");
+  NSLog(@"Authorising Spotify User...");
   SPTScope scope = SPTUserFollowReadScope | SPTAppRemoteControlScope | SPTPlaylistReadCollaborativeScope | SPTUserLibraryReadScope | SPTUserTopReadScope | SPTStreamingScope | SPTUserModifyPlaybackStateScope | SPTUserReadCurrentlyPlayingScope;
-
   
   self.appRemote = [[SPTAppRemote alloc] initWithConfiguration:self.configuration logLevel:SPTAppRemoteLogLevelDebug];
   self.appRemote.delegate = self;
@@ -193,23 +192,17 @@ static NSString * const spotifyRedirectURLString = @"juke://spotify-login-callba
     NSLog(@"No session exists... Initiating a new one...");
     
     if (@available(iOS 11, *)) {
-        
         // Use this on iOS 11 and above to take advantage of SFAuthenticationSession
         [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption];
-        
-        
     } else {
         // Use this on iOS versions < 11 to use SFSafariViewController
         [self.sessionManager initiateSessionWithScope:scope options:SPTDefaultAuthorizationOption presentingViewController:self];
     }
-    
   } else {
     NSLog(@"Renewing the session");
     [self.sessionManager renewSession];
   }
-  
   return self.appRemote.isConnected;
-  
 }
 
 - (NSDictionary *)httpPostRequest:(NSString *)url {

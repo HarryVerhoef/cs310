@@ -47,6 +47,9 @@ exports.handler = async (event) => {
 
         let vote_array = vote_array_res.Items;
 
+        console.log("VOTE ARRAY");
+        console.log(vote_array);
+
         /* (3) Work out next track */
 
         var max = -1;
@@ -125,13 +128,14 @@ exports.handler = async (event) => {
 
         /* (8) Remove lobby-track items from this lobby */
 
+
         console.log(deleteRequests);
 
-        await dynamo.batchWriteItem({
-            RequestItems: {
-                "lobby-track": deleteRequests
-            }
-        }).promise();
+        // await dynamo.batchWriteItem({
+        //     RequestItems: {
+        //         "lobby-track": deleteRequests
+        //     }
+        // }).promise();
 
 
         /* (9) Return stringified track object */

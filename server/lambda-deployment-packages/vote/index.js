@@ -46,29 +46,79 @@ exports.handler = async (event, context, callback) => {
             Key: {
                 "device_id": {"S": req.uid}
             },
-            AttributesToGet: ["lobby_key"],
+            AttributesToGet: ["lobby_key", "user_weighting", "user_vote"],
         }).promise();
 
         let lobby_key = lobby_key_res.Item.lobby_key.S;
+        let user_weighting = lobby_key_res.Item.user_weighting.N;
+        let old_user_vote = lobby_key_res.Item.user_vote;
 
-        /* (2) Update lobby-track item with vote */
+        /* (2) Update lobby-track item with vote numbers */
 
-        let vote_no_res = await dynamo.updateItem({
+        if (old_user_vote) {
+
+            // Remove old vote from lobby_track
+
+            await dynamo.updateItem({
+                TableName: "lobby-track",
+                Key: {
+                    "lobby_key": {"S": lobby_key},
+                    "track_id": {"S": old_user_vote.S}
+                },
+                UpdateExpression: "DELETE voted_users :e",
+                ExpressionAttributeValues: {
+                    ":e": {"SS": [req.uid]},
+                },
+                ReturnValues: "UPDATED_NEW"
+            }).promise();
+
+            await dynamo.updateItem({
+                TableName: "lobby-track",
+                Key: {
+                    "lobby_key": {"S": lobby_key},
+                    "track_id": {"S": old_user_vote.S}
+                },
+                UpdateExpression: "ADD vote_no :v",
+                ExpressionAttributeValues: {
+                    ":v": {"N": (-user_weighting).toString()}
+                },
+                ReturnValues: "UPDATED_NEW"
+            }).promise();
+
+        }
+
+        let user_list_res = await dynamo.updateItem({
             TableName: "lobby-track",
             Key: {
                 "lobby_key": {"S": lobby_key},
                 "track_id": {"S": req.track_id}
             },
-            UpdateExpression: "ADD vote_no :i",
+            UpdateExpression: "ADD voted_users :e, vote_no :v",
             ExpressionAttributeValues: {
-                ":i": {"N": "1"}
+                ":e": {"SS": [req.uid]},
+                ":v": {"N": user_weighting.toString()}
             },
             ReturnValues: "UPDATED_NEW"
         }).promise();
 
-        let vote_no = vote_no_res.Attributes.vote_no.N;
+        await dynamo.updateItem({
+            TableName: "device",
+            Key: {
+                "device_id": {"S": req.uid}
+            },
+            UpdateExpression: "SET user_vote = :v",
+            ExpressionAttributeValues: {
+                ":v": {"S": req.track_id}
+            }
+        }).promise();
+
+        let vote_no = user_list_res.Attributes.voted_users.SS.length;
+
+        let vote_number = user_list_res.Attributes.vote_no.N;
 
         console.log("vote_no: " + vote_no);
+
+        console.log(vote_number);
 
         /* (3) Create lobby-wide vote object */
         let vote_array_res = await dynamo.query({
@@ -82,11 +132,13 @@ exports.handler = async (event, context, callback) => {
 
         let vote_array = vote_array_res.Items;
 
+        console.log(vote_array);
+
         /* (4) Get connection_ids of users in lobby */
 
         let connected_users_res = await dynamo.query({
             TableName: "lobby-connection",
-            ProjectionExpression: "connection_id",
+            ProjectionExpression: "connection_id, device_id",
             KeyConditionExpression: "lobby_key = :lk",
             ExpressionAttributeValues: {
                 ":lk": {"S": lobby_key}
@@ -99,10 +151,21 @@ exports.handler = async (event, context, callback) => {
 
         const postCalls = connected_users.map(async (item) => {
             try {
-                await apigwManagementApi.postToConnection({ ConnectionId: item.connection_id.S, Data: JSON.stringify(vote_array) }).promise();
+                console.log(item);
+                if (item.device_id.S != req.uid) {
+                    await apigwManagementApi.postToConnection({
+                        ConnectionId: item.connection_id.S,
+                        Data: JSON.stringify({
+                            action: "vote",
+                            body: vote_array
+                        })
+                    }).promise();
+                }
+
             } catch (e) {
                 if (e.statusCode === 410) {
-                    console.log(`Found stale connection, deleting ${item.connection_id.S}`);
+                    // HTTP ERROR 410: Gone Client
+                    // Delete connection
                     await dynamo.deleteItem({
                         TableName: "lobby-connection",
                         Key: {
@@ -127,6 +190,7 @@ exports.handler = async (event, context, callback) => {
         return res;
 
     } catch(error) {
+
 
         console.log(error);
         res = {

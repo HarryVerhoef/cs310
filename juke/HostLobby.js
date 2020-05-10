@@ -491,7 +491,7 @@ export default class HostLobby extends Component {
         return (
             <View style={styles.HostLobbyBody}>
 
-                <Modal
+                {this.state.modalVisible && <Modal
                 animationType="fade"
                 transparent={false}
                 visible={this.state.modalVisible}
@@ -504,7 +504,7 @@ export default class HostLobby extends Component {
                         </View>
                         {this.showRecommendations(false, true)}
                     </View>
-                </Modal>
+                </Modal>}
 
                 <TapGestureHandler
                     waitFor={this.doubleTapRef}
@@ -537,10 +537,7 @@ export default class HostLobby extends Component {
                                 />
                             </View>}
 
-                            {this.state.activeSong.isSet && <View style={[
-                                styles.smallImage,
-
-                            ]}>
+                            {this.state.activeSong.isSet && <View style={styles.smallImage}>
                                 {!this.state.show_description && <Image
                                     style={styles.smallImageContent}
                                     source={{uri: this.state.activeSong.uri}}
@@ -626,9 +623,9 @@ export default class HostLobby extends Component {
 
 const styles = StyleSheet.create({
     HostLobbyBody: {
-        flex: 1,
-        backgroundColor: "#ffffff",
-        justifyContent: "space-around"
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").height,
+        backgroundColor: "#ffffff"
     },
 
     modal: {
@@ -735,8 +732,8 @@ const styles = StyleSheet.create({
         shadowColor: "#000000",
         shadowOpacity: 0.8,
         shadowRadius: 5,
-        width: "100%",
-        height: "100%"
+        width: Dimensions.get("window").width,
+        height: Dimensions.get("window").width
     },
     smallImage: {
         position: "absolute",
@@ -745,7 +742,9 @@ const styles = StyleSheet.create({
         zIndex: 101,
         shadowColor: "#000000",
         shadowOpacity: 0.8,
-        shadowRadius: 10
+        shadowRadius: 10,
+        top: (Dimensions.get("window").width - 190) / 2,
+        left: (Dimensions.get("window").width - 200) / 2
     },
     smallImageContent: {
         position: "absolute",
@@ -794,7 +793,7 @@ const styles = StyleSheet.create({
 
     Recommendations: {
         width: Dimensions.get("window").width,
-        height: Dimensions.get("window").height - (1.35 * Dimensions.get("window").width),
+        height: Dimensions.get("window").height - (1.15 * Dimensions.get("window").width),
         backgroundColor: "#151515",
         zIndex: 3
     },

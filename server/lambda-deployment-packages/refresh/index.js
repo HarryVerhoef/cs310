@@ -32,30 +32,7 @@ exports.handler = async (event, context, callback) => {
             body: JSON.stringify(response.data)
         };
 
-        // UPDATE device item
-        dynamo.updateItem({
-            TableName: "device",
-            Key: {
-                "device_id": {"S": req.uid}
-            },
-            UpdateExpression: "set access_token = :a spotify_user_id = :s",
-            ExpressionAttributeValues: {
-                ":a": {"S": response.data.access_token},
-                ":s": {"S"}: spotify_id
-            }
-        }, (err, data) => {
-            if (err) {
-                res = {
-                    statusCode: 500,
-                    body: JSON.stringify({
-                        data: err
-                    })
-                };
-                console.log(res);
-            } else {
-                console.log("UPDATED ITEM: " + data);
-            }
-        });
+
         console.log(res);
         return res;
 
