@@ -11,8 +11,8 @@ import random
 def refresh_auth():
     url = "https://u4lvqq9ii0.execute-api.us-west-2.amazonaws.com/epsilon-1/refresh"
     data = {
-        "uid": "42F28A71-747E-4034-B8B0-DD09C994D97C",
-        "refresh_token": "AQCNjuqm32V6UjS65J-Pz9YKhddQ_viYwxLYD--jBHt4Eh7d1QL9hYngSsHoHuuGWVKoymrx1uNzNOaLACqKtq3T9mMfAWY_dC8tLYqK6rfpdCTHPrlpzPm1Nnbm4-f3GCg"
+        "uid": "<ENTER UID>",
+        "refresh_token": "<ENTER REFRESH TOKEN>"
     }
     headers = {
         "Content-Type": "application/x-www-form-urlencoded"
